@@ -27,9 +27,29 @@ impl Pixels<'_> {
         self.pixels
     }
 
+    pub fn pixel_mut(&mut self, x: usize, y: usize) -> &mut Pixel {
+        assert!(x < self.width);
+        assert!(y < self.height);
+        &mut self.pixels[y * self.width + x]
+    }
+
     pub fn fill(&mut self, pixel: Pixel) {
         for p in self.pixels.iter_mut() {
             *p = pixel;
+        }
+    }
+
+    pub fn fill_rect(&mut self, x0: usize, y0: usize, w: usize, h: usize, color: Pixel) {
+        for y in y0..(y0 + h) {
+            if !y < self.height {
+                break;
+            }
+            for x in x0..(x0 + w) {
+                if !x < self.width {
+                    break;
+                }
+                *self.pixel_mut(x, y) = color;
+            }
         }
     }
 }
@@ -43,7 +63,7 @@ pub struct Pixel {
 }
 
 impl Pixel {
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Pixel {
+    pub const fn new(r: u8, g: u8, b: u8, a: u8) -> Pixel {
         Pixel { r, g, b, a }
     }
 
