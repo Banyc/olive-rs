@@ -52,6 +52,28 @@ impl Pixels<'_> {
             }
         }
     }
+
+    pub fn fill_circle(&mut self, cx: usize, cy: usize, r: usize, color: Pixel) {
+        let x1 = cx.saturating_sub(r);
+        let x2 = cx.saturating_add(r);
+        let y1 = cy.saturating_sub(r);
+        let y2 = cy.saturating_add(r);
+        for y in y1..y2 {
+            if !y < self.height {
+                break;
+            }
+            for x in x1..x2 {
+                if !x < self.width {
+                    break;
+                }
+                let dx = usize::abs_diff(x, cx);
+                let dy = usize::abs_diff(y, cy);
+                if dx * dx + dy * dy <= r * r {
+                    *self.pixel_mut(x, y) = color;
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
