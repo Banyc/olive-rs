@@ -39,12 +39,16 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_rect(&mut self, x0: usize, y0: usize, w: usize, h: usize, color: Pixel) {
-        for y in y0..(y0 + h) {
+    pub fn fill_rect(&mut self, x0: isize, y0: isize, w: isize, h: isize, color: Pixel) {
+        let y_min = y0.min(y0 + h).max(0) as usize;
+        let y_max = y0.max(y0 + h).max(0) as usize;
+        let x_min = x0.min(x0 + w).max(0) as usize;
+        let x_max = x0.max(x0 + w).max(0) as usize;
+        for y in y_min..y_max {
             if y >= self.height {
                 break;
             }
-            for x in x0..(x0 + w) {
+            for x in x_min..x_max {
                 if x >= self.width {
                     break;
                 }

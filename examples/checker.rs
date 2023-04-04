@@ -22,7 +22,13 @@ fn main() {
             };
             let rw = WIDTH / COLS;
             let rh = HEIGHT / ROWS;
-            canvas.fill_rect(x * rw, y * rh, rw, rh, color);
+            canvas.fill_rect(
+                (x * rw) as isize,
+                (y * rh) as isize,
+                rw as isize,
+                rh as isize,
+                color,
+            );
         }
     }
 
