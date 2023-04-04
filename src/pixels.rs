@@ -41,11 +41,11 @@ impl Pixels<'_> {
 
     pub fn fill_rect(&mut self, x0: usize, y0: usize, w: usize, h: usize, color: Pixel) {
         for y in y0..(y0 + h) {
-            if !y < self.height {
+            if y >= self.height {
                 break;
             }
             for x in x0..(x0 + w) {
-                if !x < self.width {
+                if x >= self.width {
                     break;
                 }
                 *self.pixel_mut(x, y) = color;
@@ -59,11 +59,11 @@ impl Pixels<'_> {
         let y1 = cy.saturating_sub(r);
         let y2 = cy.saturating_add(r);
         for y in y1..y2 {
-            if !y < self.height {
+            if y >= self.height {
                 break;
             }
             for x in x1..x2 {
-                if !x < self.width {
+                if x >= self.width {
                     break;
                 }
                 let dx = usize::abs_diff(x, cx);
