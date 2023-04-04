@@ -1,5 +1,5 @@
-mod pixels;
+mod canvas;
 mod ppm;
 
-pub use pixels::*;
+pub use canvas::*;
 pub use ppm::*;
