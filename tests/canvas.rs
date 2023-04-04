@@ -58,4 +58,19 @@ mod tests {
         canvas.fill_circle(w * 3 / 4, h * 3 / 4, -w / 4, GREEN_COLOR);
         assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
     }
+
+    #[test]
+    fn draw_line() {
+        let w = 128;
+        let h = 128;
+        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
+        let mut canvas = Canvas::new(w, h, &mut pixels);
+        canvas.fill(BACKGROUND_COLOR);
+        let w = w as isize;
+        let h = h as isize;
+        canvas.draw_line(0, 0, w, h, RED_COLOR);
+        canvas.draw_line(w, 0, 0, h, BLUE_COLOR);
+        canvas.draw_line(w / 2, 0, w / 2, h, GREEN_COLOR);
+        assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &canvas);
+    }
 }

@@ -83,24 +83,20 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn draw_line(&mut self, x1: usize, y1: usize, x2: usize, y2: usize, color: Pixel) {
-        assert!(x1 <= isize::MAX as usize);
-        assert!(y1 <= isize::MAX as usize);
-        assert!(x2 <= isize::MAX as usize);
-        assert!(y2 <= isize::MAX as usize);
-        let dx = x2 as isize - x1 as isize;
-        let dy = y2 as isize - y1 as isize;
+    pub fn draw_line(&mut self, x1: isize, y1: isize, x2: isize, y2: isize, color: Pixel) {
+        let dx = x2 - x1;
+        let dy = y2 - y1;
 
-        let y_min = y1.min(y2);
-        let y_max = y1.max(y2);
-        let x_min = x1.min(x2);
-        let x_max = x1.max(x2);
+        let y_min = y1.min(y2).max(0);
+        let y_max = y1.max(y2).max(0);
+        let x_min = x1.min(x2).max(0);
+        let x_max = x1.max(x2).max(0);
 
         if dx != 0 {
             let k = dy as f32 / dx as f32;
             let b = y1 as f32 - k * x1 as f32;
             for x in x_min..x_max {
-                if x >= self.width {
+                if x as usize >= self.width {
                     break;
                 }
                 let ty1 = (k * x as f32 + b) as usize;
@@ -111,16 +107,16 @@ impl Canvas<'_> {
                     if y >= self.height {
                         break;
                     }
-                    *self.pixel_mut(x, y) = color;
+                    *self.pixel_mut(x as usize, y) = color;
                 }
             }
         } else {
             // Vertical line
             for y in y_min..y_max {
-                if y >= self.height {
+                if y as usize >= self.height {
                     break;
                 }
-                *self.pixel_mut(x1, y) = color;
+                *self.pixel_mut(x1 as usize, y as usize) = color;
             }
         }
     }
