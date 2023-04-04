@@ -11,9 +11,17 @@ where
 {
     let file_path = file_path.as_ref();
     let mut file = std::fs::File::create(file_path)?;
-    file.write_all(format!("P6\n{} {} 255\n", canvas.width(), canvas.height()).as_bytes())?;
+    save_to_ppm_stream(canvas, &mut file)?;
+    Ok(())
+}
+
+pub fn save_to_ppm_stream<S>(canvas: &Canvas, stream: &mut S) -> io::Result<()>
+where
+    S: Write,
+{
+    stream.write_all(format!("P6\n{} {} 255\n", canvas.width(), canvas.height()).as_bytes())?;
     for pixel in canvas.pixels() {
-        file.write_all(&[pixel.r(), pixel.g(), pixel.b()])?;
+        stream.write_all(&[pixel.r(), pixel.g(), pixel.b()])?;
     }
     Ok(())
 }
