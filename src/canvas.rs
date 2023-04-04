@@ -57,23 +57,27 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_circle(&mut self, cx: usize, cy: usize, r: usize, color: Pixel) {
-        let x1 = cx.saturating_sub(r);
-        let x2 = cx.saturating_add(r);
-        let y1 = cy.saturating_sub(r);
-        let y2 = cy.saturating_add(r);
-        for y in y1..y2 {
-            if y >= self.height {
+    pub fn fill_circle(&mut self, cx: isize, cy: isize, r: isize, color: Pixel) {
+        let x1 = cx - r;
+        let x2 = cx + r;
+        let y1 = cy - r;
+        let y2 = cy + r;
+        let x_min = x1.min(x2).max(0);
+        let x_max = x1.max(x2).max(0);
+        let y_min = y1.min(y2).max(0);
+        let y_max = y1.max(y2).max(0);
+        for y in y_min..y_max {
+            if y as usize >= self.height {
                 break;
             }
-            for x in x1..x2 {
-                if x >= self.width {
+            for x in x_min..x_max {
+                if x as usize >= self.width {
                     break;
                 }
-                let dx = usize::abs_diff(x, cx);
-                let dy = usize::abs_diff(y, cy);
-                if dx * dx + dy * dy <= r * r {
-                    *self.pixel_mut(x, y) = color;
+                let dx = isize::abs_diff(x, cx);
+                let dy = isize::abs_diff(y, cy);
+                if dx * dx + dy * dy <= (r * r) as usize {
+                    *self.pixel_mut(x as usize, y as usize) = color;
                 }
             }
         }

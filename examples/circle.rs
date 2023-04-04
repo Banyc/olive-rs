@@ -25,7 +25,12 @@ fn main() {
             let r = (w).min(h);
 
             let r = lerp((r / 8) as f32, (r / 2) as f32, t);
-            canvas.fill_circle(x * w + w / 2, y * h + h / 2, r as usize, color);
+            canvas.fill_circle(
+                (x * w + w / 2) as isize,
+                (y * h + h / 2) as isize,
+                r as isize,
+                color,
+            );
         }
     }
 

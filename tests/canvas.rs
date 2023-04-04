@@ -43,4 +43,19 @@ mod tests {
         canvas.fill_rect(-w / 4, -h / 4, w / 2, h / 2, BLUE_COLOR);
         assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &canvas);
     }
+
+    #[test]
+    fn fill_circle() {
+        let w = 128;
+        let h = 128;
+        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
+        let mut canvas = Canvas::new(w, h, &mut pixels);
+        canvas.fill(BACKGROUND_COLOR);
+        let w = w as isize;
+        let h = h as isize;
+        canvas.fill_circle(0, 0, w / 2, RED_COLOR);
+        canvas.fill_circle(w / 2, h / 2, w / 4, BLUE_COLOR);
+        canvas.fill_circle(w * 3 / 4, h * 3 / 4, -w / 4, GREEN_COLOR);
+        assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
+    }
 }
