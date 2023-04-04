@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Pixel, Pixels};
+use olive_rs::{save_to_ppm_file, Canvas, Pixel};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -10,8 +10,8 @@ const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
 
 fn main() {
     let mut pixels = [Pixel::new(0, 0, 0, 0); WIDTH * HEIGHT];
-    let mut pixels = Pixels::new(WIDTH, HEIGHT, &mut pixels);
-    pixels.fill(BACKGROUND_COLOR);
+    let mut canvas = Canvas::new(WIDTH, HEIGHT, &mut pixels);
+    canvas.fill(BACKGROUND_COLOR);
 
     for y in 0..ROWS {
         for x in 0..COLS {
@@ -25,11 +25,11 @@ fn main() {
             let r = (w).min(h);
 
             let r = lerp((r / 8) as f32, (r / 2) as f32, t);
-            pixels.fill_circle(x * w + w / 2, y * h + h / 2, r as usize, color);
+            canvas.fill_circle(x * w + w / 2, y * h + h / 2, r as usize, color);
         }
     }
 
-    save_to_ppm_file(&pixels, "circle.ppm").unwrap();
+    save_to_ppm_file(&canvas, "circle.ppm").unwrap();
 }
 
 /// Linear interpolation between two values.

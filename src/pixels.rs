@@ -1,14 +1,14 @@
 #[derive(Debug, PartialEq, Eq)]
-pub struct Pixels<'vec> {
+pub struct Canvas<'vec> {
     width: usize,
     height: usize,
     pixels: &'vec mut [Pixel],
 }
 
-impl Pixels<'_> {
-    pub fn new(width: usize, height: usize, pixels: &mut [Pixel]) -> Pixels {
+impl Canvas<'_> {
+    pub fn new(width: usize, height: usize, pixels: &mut [Pixel]) -> Canvas {
         assert_eq!(width * height, pixels.len());
-        Pixels {
+        Canvas {
             width,
             height,
             pixels,
