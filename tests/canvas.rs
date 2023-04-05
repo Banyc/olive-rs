@@ -160,4 +160,34 @@ mod tests {
         }
         assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &canvas);
     }
+
+    #[test]
+    fn alpha_blending() {
+        let w = 128;
+        let h = 128;
+        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
+        let mut canvas = Canvas::new(w, h, &mut pixels);
+        canvas.fill(BACKGROUND_COLOR);
+        let w = w as isize;
+        let h = h as isize;
+        {
+            let p = Point { x: 0, y: 0 };
+            canvas.fill_rect(p, w * 3 / 4, h * 3 / 4, RED_COLOR);
+        }
+        {
+            let p = Point { x: w - 1, y: h - 1 };
+            canvas.fill_rect(p, -w * 3 / 4, -h * 3 / 4, Pixel::new(0, 0xaa, 0, 0x55));
+        }
+        {
+            let c = Point { x: w / 2, y: h / 2 };
+            canvas.fill_circle(c, w / 4, Pixel::new(0, 0, 0xaa, 0xbb));
+        }
+        {
+            let v1 = Point { x: 0, y: h - 1 };
+            let v2 = Point { x: w - 1, y: h - 1 };
+            let v3 = Point { x: w / 2, y: 0 };
+            canvas.fill_triangle(v1, v2, v3, Pixel::new(0xaa, 0xaa, 0, 0xbb));
+        }
+        assert_eq_canvas_with_file("tests/assets/alpha_blending.ppm", &canvas);
+    }
 }

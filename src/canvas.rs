@@ -33,6 +33,11 @@ impl Canvas<'_> {
         &mut self.pixels[y * self.width + x]
     }
 
+    pub fn pixel_over_by(&mut self, x: usize, y: usize, color: Pixel) {
+        let p = self.pixel_mut(x, y);
+        *p = color.over(*p);
+    }
+
     pub fn fill(&mut self, pixel: Pixel) {
         for p in self.pixels.iter_mut() {
             *p = pixel;
@@ -52,7 +57,7 @@ impl Canvas<'_> {
                 if x >= self.width {
                     break;
                 }
-                *self.pixel_mut(x, y) = color;
+                self.pixel_over_by(x, y, color);
             }
         }
     }
@@ -77,7 +82,7 @@ impl Canvas<'_> {
                 let dx = isize::abs_diff(x as isize, c.x);
                 let dy = isize::abs_diff(y as isize, c.y);
                 if dx * dx + dy * dy <= (r * r) as usize {
-                    *self.pixel_mut(x, y) = color;
+                    self.pixel_over_by(x, y, color);
                 }
             }
         }
@@ -93,21 +98,21 @@ impl Canvas<'_> {
         let x_max = p1.x.max(p2.x).max(0) as usize;
 
         if dx != 0 {
-            let k = dy as f32 / dx as f32;
-            let b = p1.y as f32 - k * p1.x as f32;
+            let k = dy as f64 / dx as f64;
+            let b = p1.y as f64 - k * p1.x as f64;
             for x in x_min..x_max {
                 if x >= self.width {
                     break;
                 }
-                let y1 = (k * x as f32 + b) as usize;
-                let y2 = (k * (x + 1) as f32 + b) as usize;
+                let y1 = (k * x as f64 + b) as usize;
+                let y2 = (k * (x + 1) as f64 + b) as usize;
                 let y_min = y1.min(y2);
                 let y_max = y1.max(y2);
                 for y in y_min..=y_max {
                     if y >= self.height {
                         break;
                     }
-                    *self.pixel_mut(x, y) = color;
+                    self.pixel_over_by(x, y, color);
                 }
             }
         } else {
@@ -116,7 +121,7 @@ impl Canvas<'_> {
                 if y >= self.height {
                     break;
                 }
-                *self.pixel_mut(p1.x as usize, y) = color;
+                self.pixel_over_by(p1.x as usize, y, color);
             }
         }
     }
@@ -139,7 +144,7 @@ impl Canvas<'_> {
                     y: y as isize,
                 };
                 if is_inside_triangle(p, v1, v2, v3) {
-                    *self.pixel_mut(x, y) = color;
+                    self.pixel_over_by(x, y, color);
                 }
             }
         }
@@ -227,6 +232,35 @@ impl Pixel {
 
     pub fn a(&self) -> u8 {
         self.a
+    }
+
+    #[must_use]
+    pub fn over(&self, other: Pixel) -> Pixel {
+        /// - `c1` over `c2`
+        /// - Ref: <https://en.wikipedia.org/wiki/Alpha_compositing>
+        fn mix_colors(c1: Pixel, c2: Pixel) -> Pixel {
+            let a1 = c1.a as f64 / u8::MAX as f64;
+            let a2 = c2.a as f64 / u8::MAX as f64;
+            let a0 = a1 + (1. - a1) * a2;
+            let r = mix_comps(c1.r, c2.r, a0, a1, a2);
+            let g = mix_comps(c1.g, c2.g, a0, a1, a2);
+            let b = mix_comps(c1.b, c2.b, a0, a1, a2);
+            let a = mix_comps(c1.a, c2.a, a0, a1, a2);
+            Pixel::new(r, g, b, a)
+        }
+
+        /// `c1` over `c2`
+        fn mix_comps(c1: u8, c2: u8, a0: f64, a1: f64, a2: f64) -> u8 {
+            if a0 == 0. {
+                return 0;
+            }
+            let c1 = c1 as f64;
+            let c2 = c2 as f64;
+            let c0 = (c1 * a1 + (1. - a1) * a2 * c2) / a0;
+            c0 as u8
+        }
+
+        mix_colors(*self, other)
     }
 
     /// AABBGGRR

@@ -21,7 +21,10 @@ where
 {
     stream.write_all(format!("P6\n{} {} 255\n", canvas.width(), canvas.height()).as_bytes())?;
     for pixel in canvas.pixels() {
-        stream.write_all(&[pixel.r(), pixel.g(), pixel.b()])?;
+        let r = pixel.r() as usize * pixel.a() as usize / u8::MAX as usize;
+        let g = pixel.g() as usize * pixel.a() as usize / u8::MAX as usize;
+        let b = pixel.b() as usize * pixel.a() as usize / u8::MAX as usize;
+        stream.write_all(&[r as u8, g as u8, b as u8])?;
     }
     Ok(())
 }
