@@ -62,22 +62,22 @@ impl Canvas<'_> {
         let x2 = c.x + r;
         let y1 = c.y - r;
         let y2 = c.y + r;
-        let x_min = x1.min(x2).max(0);
-        let x_max = x1.max(x2).max(0);
-        let y_min = y1.min(y2).max(0);
-        let y_max = y1.max(y2).max(0);
+        let x_min = x1.min(x2).max(0) as usize;
+        let x_max = x1.max(x2).max(0) as usize;
+        let y_min = y1.min(y2).max(0) as usize;
+        let y_max = y1.max(y2).max(0) as usize;
         for y in y_min..y_max {
-            if y as usize >= self.height {
+            if y >= self.height {
                 break;
             }
             for x in x_min..x_max {
-                if x as usize >= self.width {
+                if x >= self.width {
                     break;
                 }
-                let dx = isize::abs_diff(x, c.x);
-                let dy = isize::abs_diff(y, c.y);
+                let dx = isize::abs_diff(x as isize, c.x);
+                let dy = isize::abs_diff(y as isize, c.y);
                 if dx * dx + dy * dy <= (r * r) as usize {
-                    *self.pixel_mut(x as usize, y as usize) = color;
+                    *self.pixel_mut(x, y) = color;
                 }
             }
         }
@@ -87,16 +87,16 @@ impl Canvas<'_> {
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
 
-        let y_min = p1.y.min(p2.y).max(0);
-        let y_max = p1.y.max(p2.y).max(0);
-        let x_min = p1.x.min(p2.x).max(0);
-        let x_max = p1.x.max(p2.x).max(0);
+        let y_min = p1.y.min(p2.y).max(0) as usize;
+        let y_max = p1.y.max(p2.y).max(0) as usize;
+        let x_min = p1.x.min(p2.x).max(0) as usize;
+        let x_max = p1.x.max(p2.x).max(0) as usize;
 
         if dx != 0 {
             let k = dy as f32 / dx as f32;
             let b = p1.y as f32 - k * p1.x as f32;
             for x in x_min..x_max {
-                if x as usize >= self.width {
+                if x >= self.width {
                     break;
                 }
                 let y1 = (k * x as f32 + b) as usize;
@@ -107,36 +107,39 @@ impl Canvas<'_> {
                     if y >= self.height {
                         break;
                     }
-                    *self.pixel_mut(x as usize, y) = color;
+                    *self.pixel_mut(x, y) = color;
                 }
             }
         } else {
             // Vertical line
             for y in y_min..y_max {
-                if y as usize >= self.height {
+                if y >= self.height {
                     break;
                 }
-                *self.pixel_mut(p1.x as usize, y as usize) = color;
+                *self.pixel_mut(p1.x as usize, y) = color;
             }
         }
     }
 
     pub fn fill_triangle(&mut self, v1: Point, v2: Point, v3: Point, color: Pixel) {
-        let x_min = v1.x.min(v2.x).min(v3.x).max(0);
-        let x_max = v1.x.max(v2.x).max(v3.x).max(0);
-        let y_min = v1.y.min(v2.y).min(v3.y).max(0);
-        let y_max = v1.y.max(v2.y).max(v3.y).max(0);
+        let x_min = v1.x.min(v2.x).min(v3.x).max(0) as usize;
+        let x_max = v1.x.max(v2.x).max(v3.x).max(0) as usize;
+        let y_min = v1.y.min(v2.y).min(v3.y).max(0) as usize;
+        let y_max = v1.y.max(v2.y).max(v3.y).max(0) as usize;
         for x in x_min..x_max {
-            if x as usize >= self.width {
+            if x >= self.width {
                 break;
             }
             for y in y_min..y_max {
-                if y as usize >= self.height {
+                if y >= self.height {
                     break;
                 }
-                let p = Point { x, y };
+                let p = Point {
+                    x: x as isize,
+                    y: y as isize,
+                };
                 if is_inside_triangle(p, v1, v2, v3) {
-                    *self.pixel_mut(x as usize, y as usize) = color;
+                    *self.pixel_mut(x, y) = color;
                 }
             }
         }
