@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel};
+use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -25,12 +25,11 @@ fn main() {
             let r = (w).min(h);
 
             let r = lerp((r / 8) as f32, (r / 2) as f32, t);
-            canvas.fill_circle(
-                (x * w + w / 2) as isize,
-                (y * h + h / 2) as isize,
-                r as isize,
-                color,
-            );
+            let c = Point {
+                x: (x * w + w / 2) as isize,
+                y: (y * h + h / 2) as isize,
+            };
+            canvas.fill_circle(c, r as isize, color);
         }
     }
 

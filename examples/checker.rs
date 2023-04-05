@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel};
+use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -22,13 +22,11 @@ fn main() {
             };
             let rw = WIDTH / COLS;
             let rh = HEIGHT / ROWS;
-            canvas.fill_rect(
-                (x * rw) as isize,
-                (y * rh) as isize,
-                rw as isize,
-                rh as isize,
-                color,
-            );
+            let p = Point {
+                x: (x * rw) as isize,
+                y: (y * rh) as isize,
+            };
+            canvas.fill_rect(p, rw as isize, rh as isize, color);
         }
     }
 

@@ -39,11 +39,11 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_rect(&mut self, x0: isize, y0: isize, w: isize, h: isize, color: Pixel) {
-        let y_min = y0.min(y0 + h).max(0) as usize;
-        let y_max = y0.max(y0 + h).max(0) as usize;
-        let x_min = x0.min(x0 + w).max(0) as usize;
-        let x_max = x0.max(x0 + w).max(0) as usize;
+    pub fn fill_rect(&mut self, p: Point, w: isize, h: isize, color: Pixel) {
+        let y_min = p.y.min(p.y + h).max(0) as usize;
+        let y_max = p.y.max(p.y + h).max(0) as usize;
+        let x_min = p.x.min(p.x + w).max(0) as usize;
+        let x_max = p.x.max(p.x + w).max(0) as usize;
         for y in y_min..y_max {
             if y >= self.height {
                 break;
@@ -57,11 +57,11 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_circle(&mut self, cx: isize, cy: isize, r: isize, color: Pixel) {
-        let x1 = cx - r;
-        let x2 = cx + r;
-        let y1 = cy - r;
-        let y2 = cy + r;
+    pub fn fill_circle(&mut self, c: Point, r: isize, color: Pixel) {
+        let x1 = c.x - r;
+        let x2 = c.x + r;
+        let y1 = c.y - r;
+        let y2 = c.y + r;
         let x_min = x1.min(x2).max(0);
         let x_max = x1.max(x2).max(0);
         let y_min = y1.min(y2).max(0);
@@ -74,8 +74,8 @@ impl Canvas<'_> {
                 if x as usize >= self.width {
                     break;
                 }
-                let dx = isize::abs_diff(x, cx);
-                let dy = isize::abs_diff(y, cy);
+                let dx = isize::abs_diff(x, c.x);
+                let dy = isize::abs_diff(y, c.y);
                 if dx * dx + dy * dy <= (r * r) as usize {
                     *self.pixel_mut(x as usize, y as usize) = color;
                 }
@@ -83,26 +83,26 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn draw_line(&mut self, x1: isize, y1: isize, x2: isize, y2: isize, color: Pixel) {
-        let dx = x2 - x1;
-        let dy = y2 - y1;
+    pub fn draw_line(&mut self, p1: Point, p2: Point, color: Pixel) {
+        let dx = p2.x - p1.x;
+        let dy = p2.y - p1.y;
 
-        let y_min = y1.min(y2).max(0);
-        let y_max = y1.max(y2).max(0);
-        let x_min = x1.min(x2).max(0);
-        let x_max = x1.max(x2).max(0);
+        let y_min = p1.y.min(p2.y).max(0);
+        let y_max = p1.y.max(p2.y).max(0);
+        let x_min = p1.x.min(p2.x).max(0);
+        let x_max = p1.x.max(p2.x).max(0);
 
         if dx != 0 {
             let k = dy as f32 / dx as f32;
-            let b = y1 as f32 - k * x1 as f32;
+            let b = p1.y as f32 - k * p1.x as f32;
             for x in x_min..x_max {
                 if x as usize >= self.width {
                     break;
                 }
-                let ty1 = (k * x as f32 + b) as usize;
-                let ty2 = (k * (x + 1) as f32 + b) as usize;
-                let y_min = ty1.min(ty2);
-                let y_max = ty1.max(ty2);
+                let y1 = (k * x as f32 + b) as usize;
+                let y2 = (k * (x + 1) as f32 + b) as usize;
+                let y_min = y1.min(y2);
+                let y_max = y1.max(y2);
                 for y in y_min..=y_max {
                     if y >= self.height {
                         break;
@@ -116,10 +116,16 @@ impl Canvas<'_> {
                 if y as usize >= self.height {
                     break;
                 }
-                *self.pixel_mut(x1 as usize, y as usize) = color;
+                *self.pixel_mut(p1.x as usize, y as usize) = color;
             }
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Point {
+    pub x: isize,
+    pub y: isize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

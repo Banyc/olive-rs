@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel};
+use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -13,19 +13,67 @@ fn main() {
     let w = WIDTH as isize;
     let h = HEIGHT as isize;
     // Diagonal lines of the full-size rectangle
-    canvas.draw_line(0, h, w, 0, FOREGROUND_COLOR);
-    canvas.draw_line(0, 0, w, h, FOREGROUND_COLOR);
+    {
+        let p1 = Point { x: 0, y: h };
+        let p2 = Point { x: w, y: 0 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: 0 };
+        let p2 = Point { x: w, y: h };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
     // Horizontal and vertical lines
-    canvas.draw_line(w / 2, h, w / 2, 0, FOREGROUND_COLOR);
-    canvas.draw_line(0, h / 2, w, h / 2, FOREGROUND_COLOR);
+    {
+        let p1 = Point { x: w / 2, y: h };
+        let p2 = Point { x: w / 2, y: 0 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: h / 2 };
+        let p2 = Point { x: w, y: h / 2 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
     // Diagonal lines of the half-size rectangles
-    canvas.draw_line(0, 0, w / 2, h, FOREGROUND_COLOR);
-    canvas.draw_line(w / 2, h, w, 0, FOREGROUND_COLOR);
-    canvas.draw_line(0, h, w / 2, 0, FOREGROUND_COLOR);
-    canvas.draw_line(w / 2, 0, w, h, FOREGROUND_COLOR);
-    canvas.draw_line(0, h / 2, w, 0, FOREGROUND_COLOR);
-    canvas.draw_line(0, 0, w, h / 2, FOREGROUND_COLOR);
-    canvas.draw_line(0, h / 2, w, h, FOREGROUND_COLOR);
-    canvas.draw_line(0, h, w, h / 2, FOREGROUND_COLOR);
+    {
+        let p1 = Point { x: 0, y: 0 };
+        let p2 = Point { x: w / 2, y: h };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: w / 2, y: h };
+        let p2 = Point { x: w, y: 0 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: h };
+        let p2 = Point { x: w / 2, y: 0 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: w / 2, y: 0 };
+        let p2 = Point { x: w, y: h };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: h / 2 };
+        let p2 = Point { x: w, y: 0 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: 0 };
+        let p2 = Point { x: w, y: h / 2 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: h / 2 };
+        let p2 = Point { x: w, y: h };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
+    {
+        let p1 = Point { x: 0, y: h };
+        let p2 = Point { x: w, y: h / 2 };
+        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+    }
     save_to_ppm_file(&canvas, "lines.ppm").unwrap();
 }

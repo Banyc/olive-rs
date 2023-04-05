@@ -2,7 +2,7 @@
 mod tests {
     use std::{io::Read, path::Path};
 
-    use olive_rs::{save_to_ppm_stream, Canvas, Pixel};
+    use olive_rs::{save_to_ppm_stream, Canvas, Pixel, Point};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -38,9 +38,24 @@ mod tests {
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
-        canvas.fill_rect(w / 2 - w / 8, h / 2 - h / 8, w / 4, h / 4, RED_COLOR);
-        canvas.fill_rect(w - 1, h - 1, -w / 2, -h / 2, GREEN_COLOR);
-        canvas.fill_rect(-w / 4, -h / 4, w / 2, h / 2, BLUE_COLOR);
+        {
+            let p = Point {
+                x: w / 2 - w / 8,
+                y: h / 2 - h / 8,
+            };
+            canvas.fill_rect(p, w / 4, h / 4, RED_COLOR);
+        }
+        {
+            let p = Point { x: w - 1, y: h - 1 };
+            canvas.fill_rect(p, -w / 2, -h / 2, GREEN_COLOR);
+        }
+        {
+            let p = Point {
+                x: -w / 4,
+                y: -h / 4,
+            };
+            canvas.fill_rect(p, w / 2, h / 2, BLUE_COLOR);
+        }
         assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &canvas);
     }
 
@@ -53,9 +68,21 @@ mod tests {
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
-        canvas.fill_circle(0, 0, w / 2, RED_COLOR);
-        canvas.fill_circle(w / 2, h / 2, w / 4, BLUE_COLOR);
-        canvas.fill_circle(w * 3 / 4, h * 3 / 4, -w / 4, GREEN_COLOR);
+        {
+            let c = Point { x: 0, y: 0 };
+            canvas.fill_circle(c, w / 2, RED_COLOR);
+        }
+        {
+            let c = Point { x: w / 2, y: h / 2 };
+            canvas.fill_circle(c, w / 4, BLUE_COLOR);
+        }
+        {
+            let c = Point {
+                x: w * 3 / 4,
+                y: h * 3 / 4,
+            };
+            canvas.fill_circle(c, -w / 4, GREEN_COLOR);
+        }
         assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
     }
 
@@ -68,9 +95,21 @@ mod tests {
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
-        canvas.draw_line(0, 0, w, h, RED_COLOR);
-        canvas.draw_line(w, 0, 0, h, BLUE_COLOR);
-        canvas.draw_line(w / 2, 0, w / 2, h, GREEN_COLOR);
+        {
+            let p1 = Point { x: 0, y: 0 };
+            let p2 = Point { x: w, y: h };
+            canvas.draw_line(p1, p2, RED_COLOR);
+        }
+        {
+            let p1 = Point { x: w, y: 0 };
+            let p2 = Point { x: 0, y: h };
+            canvas.draw_line(p1, p2, BLUE_COLOR);
+        }
+        {
+            let p1 = Point { x: w / 2, y: 0 };
+            let p2 = Point { x: w / 2, y: h };
+            canvas.draw_line(p1, p2, GREEN_COLOR);
+        }
         assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &canvas);
     }
 }
