@@ -200,6 +200,7 @@ pub struct Point {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
 pub struct Pixel {
     r: u8,
     g: u8,
