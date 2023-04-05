@@ -112,4 +112,52 @@ mod tests {
         }
         assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &canvas);
     }
+
+    #[test]
+    fn fill_triangle() {
+        let w = 128;
+        let h = 128;
+        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
+        let mut canvas = Canvas::new(w, h, &mut pixels);
+        canvas.fill(BACKGROUND_COLOR);
+        let w = w as isize;
+        let h = h as isize;
+        {
+            let v1 = Point { x: w / 2, y: h / 8 };
+            let v2 = Point { x: w / 8, y: h / 2 };
+            let v3 = Point {
+                x: w * 7 / 8,
+                y: h * 7 / 8,
+            };
+            canvas.fill_triangle(v1, v2, v3, RED_COLOR);
+        }
+        {
+            let v1 = Point {
+                x: w / 2,
+                y: h * 2 / 8,
+            };
+            let v2 = Point {
+                x: w * 2 / 8,
+                y: h / 2,
+            };
+            let v3 = Point {
+                x: w * 6 / 8,
+                y: h / 2,
+            };
+            canvas.fill_triangle(v1, v2, v3, GREEN_COLOR);
+        }
+        {
+            let v1 = Point { x: w / 8, y: h / 8 };
+            let v2 = Point {
+                x: w / 8,
+                y: h * 3 / 8,
+            };
+            let v3 = Point {
+                x: w * 3 / 8,
+                y: h * 3 / 8,
+            };
+            canvas.fill_triangle(v1, v2, v3, BLUE_COLOR);
+        }
+        assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &canvas);
+    }
 }
