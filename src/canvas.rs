@@ -44,11 +44,11 @@ impl Canvas<'_> {
         let y_max = p.y.max(p.y + h).max(0) as usize;
         let x_min = p.x.min(p.x + w).max(0) as usize;
         let x_max = p.x.max(p.x + w).max(0) as usize;
-        for y in y_min..y_max {
+        for y in y_min..=y_max {
             if y >= self.height {
                 break;
             }
-            for x in x_min..x_max {
+            for x in x_min..=x_max {
                 if x >= self.width {
                     break;
                 }
@@ -66,11 +66,11 @@ impl Canvas<'_> {
         let x_max = x1.max(x2).max(0) as usize;
         let y_min = y1.min(y2).max(0) as usize;
         let y_max = y1.max(y2).max(0) as usize;
-        for y in y_min..y_max {
+        for y in y_min..=y_max {
             if y >= self.height {
                 break;
             }
-            for x in x_min..x_max {
+            for x in x_min..=x_max {
                 if x >= self.width {
                     break;
                 }
@@ -112,7 +112,7 @@ impl Canvas<'_> {
             }
         } else {
             // Vertical line
-            for y in y_min..y_max {
+            for y in y_min..=y_max {
                 if y >= self.height {
                     break;
                 }
@@ -126,11 +126,11 @@ impl Canvas<'_> {
         let x_max = v1.x.max(v2.x).max(v3.x).max(0) as usize;
         let y_min = v1.y.min(v2.y).min(v3.y).max(0) as usize;
         let y_max = v1.y.max(v2.y).max(v3.y).max(0) as usize;
-        for x in x_min..x_max {
+        for x in x_min..=x_max {
             if x >= self.width {
                 break;
             }
-            for y in y_min..y_max {
+            for y in y_min..=y_max {
                 if y >= self.height {
                     break;
                 }
