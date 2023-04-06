@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Canvas<'vec> {
     width: usize,
@@ -45,6 +47,14 @@ impl Canvas<'_> {
     }
 
     pub fn fill_rect(&mut self, p: Point, w: isize, h: isize, color: Pixel) {
+        if w == 0 || h == 0 {
+            return;
+        }
+
+        // Trim each edge off one pixel since `p` takes up one pixel.
+        let w = trim_edge(w);
+        let h = trim_edge(h);
+
         let y_min = p.y.min(p.y + h).max(0) as usize;
         let y_max = p.y.max(p.y + h).max(0) as usize;
         let x_min = p.x.min(p.x + w).max(0) as usize;
@@ -63,6 +73,13 @@ impl Canvas<'_> {
     }
 
     pub fn fill_circle(&mut self, c: Point, r: isize, color: Pixel) {
+        if r == 0 {
+            return;
+        }
+
+        // Trim radius off one pixel since `c` takes up one pixel.
+        let r = trim_edge(r);
+
         let x1 = c.x - r;
         let x2 = c.x + r;
         let y1 = c.y - r;
@@ -196,6 +213,14 @@ fn is_inside_triangle(p: Point, v1: Point, v2: Point, v3: Point) -> bool {
     //   - vector $v2 - p$ is on the same line as $v3 - p$
     //   - vector $v3 - p$ is on the same line as $v1 - p$
     all_neg || all_pos || any_zero
+}
+
+fn trim_edge(e: isize) -> isize {
+    match e.cmp(&0) {
+        Ordering::Less => e + 1,
+        Ordering::Greater => e - 1,
+        Ordering::Equal => panic!("e is 0"),
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
