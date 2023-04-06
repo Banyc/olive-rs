@@ -1,7 +1,7 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
-use olive_rs::{Canvas, Pixel, Point};
-use wasm::{draw, setup, start_loop};
+use olive_rs::{Canvas, Pixel, Point, Render};
+use wasm::start_render;
 
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
 const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -10,11 +10,9 @@ fn main() {
     let w = 800;
     let h = 600;
 
-    setup(w as u32, h as u32);
-
     let w = w as isize;
     let h = h as isize;
-    let mut rotating_triangle = RotatingTriangle::new(
+    let rotating_triangle = RotatingTriangle::new(
         w as usize,
         h as usize,
         Point { x: w / 2, y: h / 8 },
@@ -27,19 +25,7 @@ fn main() {
         0.0,
     );
 
-    let mut render_time: Option<f64> = None;
-
-    start_loop(move |timestamp| {
-        let dt = match render_time {
-            Some(t) => timestamp - t,
-            None => 0.0,
-        };
-        render_time = Some(timestamp);
-        rotating_triangle.render(0.001 * dt as f32);
-        let pixels = rotating_triangle.pixels();
-
-        draw(pixels, w as u32, h as u32);
-    });
+    start_render(w as u32, h as u32, rotating_triangle);
 }
 
 pub struct RotatingTriangle {
@@ -50,7 +36,7 @@ pub struct RotatingTriangle {
     v2: Point,
     v3: Point,
     color: Pixel,
-    angle: f32,
+    angle: f64,
 }
 
 impl RotatingTriangle {
@@ -62,7 +48,7 @@ impl RotatingTriangle {
         v2: Point,
         v3: Point,
         color: Pixel,
-        angle: f32,
+        angle: f64,
     ) -> Self {
         let pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
         Self {
@@ -76,9 +62,11 @@ impl RotatingTriangle {
             angle,
         }
     }
+}
 
-    pub fn render(&mut self, delta: f32) {
-        self.angle += 2. * PI * delta;
+impl Render for RotatingTriangle {
+    fn render(&mut self, dt_ms: f64) {
+        self.angle += 2. * PI * dt_ms * 0.001;
 
         let mut canvas = Canvas::new(self.w, self.h, &mut self.pixels);
 
@@ -94,17 +82,17 @@ impl RotatingTriangle {
         canvas.fill_triangle(v1, v2, v3, self.color);
     }
 
-    pub fn pixels(&self) -> &[Pixel] {
+    fn pixels(&self) -> &[Pixel] {
         &self.pixels
     }
 }
 
-fn rotate_point(c: Point, p: Point, angle: f32) -> Point {
+fn rotate_point(c: Point, p: Point, angle: f64) -> Point {
     // Vector from center to point
     let vx = p.x - c.x;
     let vy = p.y - c.y;
-    let vx = vx as f32;
-    let vy = vy as f32;
+    let vx = vx as f64;
+    let vy = vy as f64;
 
     // Rotate vector
     let mag = (vx * vx + vy * vy).sqrt();

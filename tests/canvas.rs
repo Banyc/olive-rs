@@ -2,7 +2,7 @@
 mod tests {
     use std::{io::Read, path::Path};
 
-    use olive_rs::{save_to_ppm_stream, Canvas, Pixel, Point};
+    use olive_rs::{save_to_ppm_file, save_to_ppm_stream, Canvas, Pixel, Point};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -56,6 +56,7 @@ mod tests {
             };
             canvas.fill_rect(p, w / 2, h / 2, BLUE_COLOR);
         }
+        // save_to_ppm_file(&canvas, "tests/assets/fill_rect.2.ppm").unwrap();
         assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &canvas);
     }
 
@@ -83,6 +84,7 @@ mod tests {
             };
             canvas.fill_circle(c, -w / 4, GREEN_COLOR);
         }
+        // save_to_ppm_file(&canvas, "tests/assets/fill_circle.2.ppm").unwrap();
         assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
     }
 
@@ -158,6 +160,7 @@ mod tests {
             };
             canvas.fill_triangle(v1, v2, v3, BLUE_COLOR);
         }
+        // save_to_ppm_file(&canvas, "tests/assets/fill_triangle.2.ppm").unwrap();
         assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &canvas);
     }
 
