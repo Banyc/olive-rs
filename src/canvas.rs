@@ -88,6 +88,19 @@ impl Canvas<'_> {
         let x_max = x1.max(x2).max(0) as usize;
         let y_min = y1.min(y2).max(0) as usize;
         let y_max = y1.max(y2).max(0) as usize;
+
+        /// Say we have a line of size 1 and we divided it into `res` segments evenly.
+        ///
+        /// The middle of the line is at 0.5.
+        ///
+        /// It returns the offset from the middle point of the original line to the middle point of the `i`th segment.
+        fn offset_from_middle(i: usize, res: usize) -> f64 {
+            let offset_from_zero = (i + 1) as f64 / (res + 1) as f64;
+            offset_from_zero - 1. / 2.
+        }
+
+        const RESOLUTION: usize = 2;
+
         for y in y_min..=y_max {
             if y >= self.height {
                 break;
@@ -98,9 +111,26 @@ impl Canvas<'_> {
                 }
                 let dx = isize::abs_diff(x as isize, c.x);
                 let dy = isize::abs_diff(y as isize, c.y);
-                if dx * dx + dy * dy <= (r * r) as usize {
-                    self.pixel_over_by(x, y, color);
+                let mut sub_pixels_filled = 0;
+                for sub_y_i in 0..RESOLUTION {
+                    let dy = dy as f64 + offset_from_middle(sub_y_i, RESOLUTION);
+                    for sub_x_i in 0..RESOLUTION {
+                        let dx = dx as f64 + offset_from_middle(sub_x_i, RESOLUTION);
+                        if dx * dx + dy * dy <= (r * r) as f64 {
+                            sub_pixels_filled += 1;
+                        }
+                    }
                 }
+                let sub_pixels_total = RESOLUTION * RESOLUTION;
+                let sub_pixels_filled = sub_pixels_filled as f64 / sub_pixels_total as f64;
+                let alpha = color.a() as f64 * sub_pixels_filled;
+                let color = Pixel::new(color.r(), color.g(), color.b(), alpha as u8);
+                self.pixel_over_by(x, y, color);
+
+                // If we don't want to use sub-pixels, we can use this instead.
+                // if dx * dx + dy * dy <= (r * r) as usize {
+                //     self.pixel_over_by(x, y, color);
+                // }
             }
         }
     }
