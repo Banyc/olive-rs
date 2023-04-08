@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
+use olive_rs::{save_to_ppm_file, Canvas, Pixel, PointF};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -15,21 +15,18 @@ fn main() {
 
     for y in 0..ROWS {
         for x in 0..COLS {
-            let u = x as f32 / COLS as f32;
-            let v = y as f32 / ROWS as f32;
+            let u = x as f64 / COLS as f64;
+            let v = y as f64 / ROWS as f64;
             let t = (u + v) / 2.;
 
             let color = Pixel::new(0x80, 0x80, 0x80, 0xff);
             let w = WIDTH / COLS;
             let h = HEIGHT / ROWS;
-            let r = (w).min(h);
+            let r = (w).min(h) as f64;
 
-            let r = lerp((r / 8) as f32, (r / 2) as f32, t);
-            let c = Point {
-                x: (x * w + w / 2) as isize,
-                y: (y * h + h / 2) as isize,
-            };
-            canvas.fill_circle(c, r as isize, color);
+            let r = lerp(r / 8., r / 2., t);
+            let c = PointF::from_int((x * w + w / 2) as isize, (y * h + h / 2) as isize);
+            canvas.fill_circle(c, r, color);
         }
     }
 
@@ -37,7 +34,7 @@ fn main() {
 }
 
 /// Linear interpolation between two values.
-fn lerp(a: f32, b: f32, t: f32) -> f32 {
+fn lerp(a: f64, b: f64, t: f64) -> f64 {
     assert!(t >= 0.);
     assert!(t <= 1.);
     a + (b - a) * t

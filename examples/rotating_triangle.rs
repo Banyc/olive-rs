@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use olive_rs::{Canvas, Pixel, Point, Render};
+use olive_rs::{Canvas, EvenF, Pixel, Point, PointF, Render};
 use wasm::start_render;
 
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
@@ -45,13 +45,10 @@ impl Animation {
             0.0,
         );
         let bouncing_circle = BouncingCircle::new(
-            Point {
-                x: w_i / 2,
-                y: h_i / 2,
-            },
-            100,
-            100,
-            100,
+            PointF::from_int(w_i / 2, h_i / 2),
+            100.,
+            100.,
+            100.,
             CIRCLE_COLOR,
         );
         Self {
@@ -136,20 +133,20 @@ impl RotatingTriangle {
 }
 
 pub struct BouncingCircle {
-    c: Point,
-    r: isize,
-    dx_coe: isize,
-    dy_coe: isize,
+    c: PointF,
+    r: f64,
+    vx: f64,
+    vy: f64,
     color: Pixel,
 }
 
 impl BouncingCircle {
-    pub fn new(c: Point, r: isize, dx_coe: isize, dy_coe: isize, color: Pixel) -> Self {
+    pub fn new(c: PointF, r: f64, vx: f64, vy: f64, color: Pixel) -> Self {
         Self {
             c,
             r,
-            dx_coe,
-            dy_coe,
+            vx,
+            vy,
             color,
         }
     }
@@ -157,21 +154,23 @@ impl BouncingCircle {
     pub fn render(&mut self, canvas: &mut Canvas<'_>, dt_s: f64) {
         let w = canvas.width() as isize;
         let h = canvas.height() as isize;
+        let w = EvenF::new(w, 0.);
+        let h = EvenF::new(h, 0.);
 
-        let dx = (dt_s * self.dx_coe as f64) as isize;
-        let dy = (dt_s * self.dy_coe as f64) as isize;
-        let x = self.c.x + dx;
-        let y = self.c.y + dy;
+        let dx = dt_s * self.vx;
+        let dy = dt_s * self.vy;
+        let x = self.c.x().add_f(dx);
+        let y = self.c.y().add_f(dy);
 
-        if x - self.r < 0 || x + self.r > w {
-            self.dx_coe = -self.dx_coe;
+        if x.add_f(-self.r) < EvenF::zero() || x.add_f(self.r) > w {
+            self.vx = -self.vx;
         } else {
-            self.c.x = x;
+            self.c = PointF::new(x, self.c.y());
         }
-        if y - self.r < 0 || y + self.r > h {
-            self.dy_coe = -self.dy_coe;
+        if y.add_f(-self.r) < EvenF::zero() || y.add_f(self.r) > h {
+            self.vy = -self.vy;
         } else {
-            self.c.y = y;
+            self.c = PointF::new(self.c.x(), y);
         }
 
         canvas.fill_circle(self.c, self.r, self.color);

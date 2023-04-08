@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-pub use self::points::{Point, PointF};
+pub use self::points::{EvenF, Point, PointF};
 
 const RESOLUTION: usize = 2;
 
@@ -76,18 +76,11 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_circle(&mut self, c: Point, r: isize, color: Pixel) {
-        if r == 0 {
-            return;
-        }
-
-        // Trim radius off one pixel since `c` takes up one pixel.
-        let r = trim_edge(r);
-
-        let x1 = c.x - r;
-        let x2 = c.x + r;
-        let y1 = c.y - r;
-        let y2 = c.y + r;
+    pub fn fill_circle(&mut self, c: PointF, r: f64, color: Pixel) {
+        let x1 = (c.x().add_f(-r)).floor();
+        let x2 = (c.x().add_f(r)).ceil();
+        let y1 = (c.y().add_f(-r)).floor();
+        let y2 = (c.y().add_f(r)).ceil();
         let x_min = x1.min(x2).max(0) as usize;
         let x_max = x1.max(x2).max(0) as usize;
         let y_min = y1.min(y2).max(0) as usize;
@@ -121,9 +114,10 @@ impl Canvas<'_> {
                 if x >= self.width {
                     break;
                 }
-                let dx = isize::abs_diff(x as isize, c.x) as f64;
-                let dy = isize::abs_diff(y as isize, c.y) as f64;
-                let r = r as f64;
+                let dx = EvenF::new(x as isize, 0.) - c.x();
+                let dy = EvenF::new(y as isize, 0.) - c.y();
+                let dx = dx.to_f();
+                let dy = dy.to_f();
 
                 if is_far_outside_circle(dx, dy, r) {
                     continue;
@@ -248,8 +242,8 @@ fn is_inside_triangle(p: PointF, v1: PointF, v2: PointF, v3: PointF) -> bool {
     /// - The determinant is negative as long as v2 is on the right side of v1
     /// - The determinant is zero when v2 is on the same line as v1
     fn determinant(p0: PointF, p1: PointF, p2: PointF) -> f64 {
-        let (x01, y01) = p0.vector_to(p1);
-        let (x02, y02) = p0.vector_to(p2);
+        let (x01, y01) = p0.f_to(p1);
+        let (x02, y02) = p0.f_to(p2);
         x01 * y02 - x02 * y01
     }
     let d1 = determinant(p, v1, v2);
@@ -305,6 +299,8 @@ fn offset_from_middle_iter() -> impl Iterator<Item = f64> {
 }
 
 mod points {
+    use std::ops::{Add, Sub};
+
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct Point {
         pub x: isize,
@@ -314,60 +310,115 @@ mod points {
     impl From<PointF> for Point {
         fn from(p: PointF) -> Self {
             Self {
-                x: p.x_round(),
-                y: p.y_round(),
+                x: p.x().round(),
+                y: p.y().round(),
             }
+        }
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+    pub struct EvenF {
+        n: isize,
+        off: f64, // 0. ..1.
+    }
+
+    impl EvenF {
+        pub fn new(mut n: isize, mut off: f64) -> Self {
+            if !(0. ..1.).contains(&off) {
+                let d = off.floor() as isize;
+                n += d;
+                off -= d as f64;
+            }
+            assert!((0. ..1.).contains(&off));
+            Self { n, off }
+        }
+
+        pub fn zero() -> Self {
+            Self::new(0, 0.)
+        }
+
+        pub fn round(&self) -> isize {
+            self.n + self.off.round() as isize
+        }
+
+        pub fn floor(&self) -> isize {
+            self.n
+        }
+
+        pub fn ceil(&self) -> isize {
+            self.n + self.off.ceil() as isize
+        }
+
+        pub fn to_f(self) -> f64 {
+            self.n as f64 + self.off
+        }
+
+        pub fn f_to(&self, rhs: Self) -> f64 {
+            (rhs.n - self.n) as f64 + rhs.off - self.off
+        }
+
+        pub fn add_f(&self, v: f64) -> Self {
+            Self::new(self.n, self.off + v)
+        }
+    }
+
+    impl Add for EvenF {
+        type Output = Self;
+
+        fn add(self, rhs: Self) -> Self::Output {
+            Self::new(self.n + rhs.n, self.off + rhs.off)
+        }
+    }
+
+    impl Sub for EvenF {
+        type Output = Self;
+
+        fn sub(self, rhs: Self) -> Self::Output {
+            Self::new(self.n - rhs.n, self.off - rhs.off)
+        }
+    }
+
+    impl From<f64> for EvenF {
+        fn from(v: f64) -> Self {
+            Self::new(0, v)
         }
     }
 
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct PointF {
-        x: isize,
-        x_off: f64, // 0. ..1.
-        y: isize,
-        y_off: f64, // 0. ..1.
+        x: EvenF,
+        y: EvenF,
     }
 
     impl PointF {
-        pub const fn from_int(x: isize, y: isize) -> Self {
+        pub fn new(x: EvenF, y: EvenF) -> Self {
+            Self { x, y }
+        }
+
+        pub fn from_int(x: isize, y: isize) -> Self {
             Self {
-                x,
-                x_off: 0.,
-                y,
-                y_off: 0.,
+                x: EvenF::new(x, 0.),
+                y: EvenF::new(y, 0.),
             }
         }
 
-        pub fn from_float(mut x: isize, mut x_off: f64, mut y: isize, mut y_off: f64) -> Self {
-            if !(0. ..1.).contains(&x_off) {
-                let d = x_off.floor() as isize;
-                x += d;
-                x_off -= d as f64;
+        pub fn from_float(x: isize, x_off: f64, y: isize, y_off: f64) -> Self {
+            Self {
+                x: EvenF::new(x, x_off),
+                y: EvenF::new(y, y_off),
             }
-            if !(0. ..1.).contains(&y_off) {
-                let d = y_off.floor() as isize;
-                y += d;
-                y_off -= d as f64;
-            }
-            assert!((0. ..1.).contains(&x_off));
-            assert!((0. ..1.).contains(&y_off));
-            Self { x, x_off, y, y_off }
         }
 
-        pub fn x_round(&self) -> isize {
-            self.x + self.x_off.round() as isize
+        pub fn x(&self) -> EvenF {
+            self.x
         }
 
-        pub fn y_round(&self) -> isize {
-            self.y + self.y_off.round() as isize
+        pub fn y(&self) -> EvenF {
+            self.y
         }
 
-        pub fn vector_to(&self, rhs: Self) -> (f64, f64) {
-            let x = rhs.x - self.x;
-            let y = rhs.y - self.y;
-            let x_off = rhs.x_off - self.x_off;
-            let y_off = rhs.y_off - self.y_off;
-            (x as f64 + x_off, y as f64 + y_off)
+        pub fn f_to(&self, rhs: Self) -> (f64, f64) {
+            (self.x.f_to(rhs.x), self.y.f_to(rhs.y))
         }
     }
 

@@ -2,7 +2,7 @@
 mod tests {
     use std::{io::Read, path::Path};
 
-    use olive_rs::{save_to_ppm_stream, Canvas, Pixel, Point};
+    use olive_rs::{save_to_ppm_stream, Canvas, Pixel, Point, PointF};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -83,19 +83,19 @@ mod tests {
         let w = w as isize;
         let h = h as isize;
         {
-            let c = Point { x: 0, y: 0 };
-            canvas.fill_circle(c, w / 2, RED_COLOR);
+            let c = PointF::from_int(0, 0);
+            let r = (w / 2) as f64;
+            canvas.fill_circle(c, r, RED_COLOR);
         }
         {
-            let c = Point { x: w / 2, y: h / 2 };
-            canvas.fill_circle(c, w / 4, BLUE_COLOR);
+            let c = PointF::from_int(w / 2, h / 2);
+            let r = (w / 4) as f64;
+            canvas.fill_circle(c, r, BLUE_COLOR);
         }
         {
-            let c = Point {
-                x: w * 3 / 4,
-                y: h * 3 / 4,
-            };
-            canvas.fill_circle(c, -w / 4, GREEN_COLOR);
+            let c = PointF::from_int(w * 3 / 4, h * 3 / 4);
+            let r = (-w / 4) as f64;
+            canvas.fill_circle(c, r, GREEN_COLOR);
         }
         assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
     }
@@ -108,8 +108,9 @@ mod tests {
         let mut canvas = Canvas::new(w, h, &mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         {
-            let c = Point { x: 0, y: 0 };
-            canvas.fill_circle(c, 0, RED_COLOR);
+            let c = PointF::from_int(0, 0);
+            let r = 0.;
+            canvas.fill_circle(c, r, RED_COLOR);
         }
         assert_eq!(canvas.pixels(), [BACKGROUND_COLOR]);
     }
@@ -207,8 +208,9 @@ mod tests {
             canvas.fill_rect(p, -w * 3 / 4, -h * 3 / 4, Pixel::new(0, 0xaa, 0, 0x55));
         }
         {
-            let c = Point { x: w / 2, y: h / 2 };
-            canvas.fill_circle(c, w / 4, Pixel::new(0, 0, 0xaa, 0xbb));
+            let c = PointF::from_int(w / 2, h / 2);
+            let r = (w / 4) as f64;
+            canvas.fill_circle(c, r, Pixel::new(0, 0, 0xaa, 0xbb));
         }
         {
             let v1 = Point { x: 0, y: h - 1 };
