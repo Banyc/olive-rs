@@ -186,12 +186,12 @@ impl Canvas<'_> {
         let x_max = v1.x.max(v2.x).max(v3.x).max(0) as usize;
         let y_min = v1.y.min(v2.y).min(v3.y).max(0) as usize;
         let y_max = v1.y.max(v2.y).max(v3.y).max(0) as usize;
-        for x in x_min..=x_max {
-            if x >= self.width {
+        for y in y_min..=y_max {
+            if y >= self.height {
                 break;
             }
-            for y in y_min..=y_max {
-                if y >= self.height {
+            for x in x_min..=x_max {
+                if x >= self.width {
                     break;
                 }
                 let p = Point {
