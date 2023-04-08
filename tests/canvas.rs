@@ -152,39 +152,21 @@ mod tests {
         let w = w as isize;
         let h = h as isize;
         {
-            let v1 = Point { x: w / 2, y: h / 8 };
-            let v2 = Point { x: w / 8, y: h / 2 };
-            let v3 = Point {
-                x: w * 7 / 8,
-                y: h * 7 / 8,
-            };
+            let v1 = PointF::from_int(w / 2, h / 8);
+            let v2 = PointF::from_int(w / 8, h / 2);
+            let v3 = PointF::from_int(w * 7 / 8, h * 7 / 8);
             canvas.fill_triangle(v1, v2, v3, RED_COLOR);
         }
         {
-            let v1 = Point {
-                x: w / 2,
-                y: h * 2 / 8,
-            };
-            let v2 = Point {
-                x: w * 2 / 8,
-                y: h / 2,
-            };
-            let v3 = Point {
-                x: w * 6 / 8,
-                y: h / 2,
-            };
+            let v1 = PointF::from_int(w / 2, h * 2 / 8);
+            let v2 = PointF::from_int(w * 2 / 8, h / 2);
+            let v3 = PointF::from_int(w * 6 / 8, h / 2);
             canvas.fill_triangle(v1, v2, v3, GREEN_COLOR);
         }
         {
-            let v1 = Point { x: w / 8, y: h / 8 };
-            let v2 = Point {
-                x: w / 8,
-                y: h * 3 / 8,
-            };
-            let v3 = Point {
-                x: w * 3 / 8,
-                y: h * 3 / 8,
-            };
+            let v1 = PointF::from_int(w / 8, h / 8);
+            let v2 = PointF::from_int(w / 8, h * 3 / 8);
+            let v3 = PointF::from_int(w * 3 / 8, h * 3 / 8);
             canvas.fill_triangle(v1, v2, v3, BLUE_COLOR);
         }
         assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &canvas);
@@ -213,9 +195,9 @@ mod tests {
             canvas.fill_circle(c, r, Pixel::new(0, 0, 0xaa, 0xbb));
         }
         {
-            let v1 = Point { x: 0, y: h - 1 };
-            let v2 = Point { x: w - 1, y: h - 1 };
-            let v3 = Point { x: w / 2, y: 0 };
+            let v1 = PointF::from_int(0, h - 1);
+            let v2 = PointF::from_int(w - 1, h - 1);
+            let v3 = PointF::from_int(w / 2, 0);
             canvas.fill_triangle(v1, v2, v3, Pixel::new(0xaa, 0xaa, 0, 0xbb));
         }
         assert_eq_canvas_with_file("tests/assets/alpha_blending.ppm", &canvas);

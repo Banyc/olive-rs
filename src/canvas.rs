@@ -181,11 +181,21 @@ impl Canvas<'_> {
         }
     }
 
-    pub fn fill_triangle(&mut self, v1: Point, v2: Point, v3: Point, color: Pixel) {
-        let x_min = v1.x.min(v2.x).min(v3.x).max(0) as usize;
-        let x_max = v1.x.max(v2.x).max(v3.x).max(0) as usize;
-        let y_min = v1.y.min(v2.y).min(v3.y).max(0) as usize;
-        let y_max = v1.y.max(v2.y).max(v3.y).max(0) as usize;
+    pub fn fill_triangle(&mut self, v1: PointF, v2: PointF, v3: PointF, color: Pixel) {
+        let x_min = v1
+            .x()
+            .floor()
+            .min(v2.x().floor())
+            .min(v3.x().floor())
+            .max(0) as usize;
+        let x_max = v1.x().ceil().max(v2.x().ceil()).max(v3.x().ceil()).max(0) as usize;
+        let y_min = v1
+            .y()
+            .floor()
+            .min(v2.y().floor())
+            .min(v3.y().floor())
+            .max(0) as usize;
+        let y_max = v1.y().ceil().max(v2.y().ceil()).max(v3.y().ceil()).max(0) as usize;
         for y in y_min..=y_max {
             if y >= self.height {
                 break;
@@ -194,11 +204,8 @@ impl Canvas<'_> {
                 if x >= self.width {
                     break;
                 }
-                let p = Point {
-                    x: x as isize,
-                    y: y as isize,
-                };
-                if is_inside_triangle(p.into(), v1.into(), v2.into(), v3.into()) {
+                let p = PointF::from_int(x as isize, y as isize);
+                if is_inside_triangle(p, v1, v2, v3) {
                     self.pixel_over_by(x, y, color);
                 }
             }

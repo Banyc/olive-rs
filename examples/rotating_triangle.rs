@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use olive_rs::{Canvas, EvenF, Pixel, Point, PointF, Render};
+use olive_rs::{Canvas, EvenF, Pixel, PointF, Render};
 use wasm::start_render;
 
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
@@ -29,18 +29,9 @@ impl Animation {
         let w_i = w as isize;
         let h_i = h as isize;
         let rotating_triangle = RotatingTriangle::new(
-            Point {
-                x: w_i / 2,
-                y: h_i / 8,
-            },
-            Point {
-                x: w_i / 8,
-                y: h_i / 2,
-            },
-            Point {
-                x: w_i * 7 / 8,
-                y: h_i * 7 / 8,
-            },
+            PointF::from_int(w_i / 2, h_i / 8),
+            PointF::from_int(w_i / 8, h_i / 2),
+            PointF::from_int(w_i * 7 / 8, h_i * 7 / 8),
             RED_COLOR,
             0.0,
         );
@@ -76,16 +67,16 @@ impl Render for Animation {
 }
 
 pub struct RotatingTriangle {
-    v1: Point,
-    v2: Point,
-    v3: Point,
+    v1: PointF,
+    v2: PointF,
+    v3: PointF,
     color: Pixel,
     angle: f64,
 }
 
 impl RotatingTriangle {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(v1: Point, v2: Point, v3: Point, color: Pixel, angle: f64) -> Self {
+    pub fn new(v1: PointF, v2: PointF, v3: PointF, color: Pixel, angle: f64) -> Self {
         Self {
             v1,
             v2,
@@ -98,12 +89,12 @@ impl RotatingTriangle {
 
 impl RotatingTriangle {
     fn render(&mut self, canvas: &mut Canvas<'_>, dt_s: f64) {
-        fn rotate_point(c: Point, p: Point, angle: f64) -> Point {
+        fn rotate_point(c: PointF, p: PointF, angle: f64) -> PointF {
             // Vector from center to point
-            let vx = p.x - c.x;
-            let vy = p.y - c.y;
-            let vx = vx as f64;
-            let vy = vy as f64;
+            let vx = p.x() - c.x();
+            let vy = p.y() - c.y();
+            let vx = vx.to_f();
+            let vy = vy.to_f();
 
             // Rotate vector
             let mag = (vx * vx + vy * vy).sqrt();
@@ -112,18 +103,15 @@ impl RotatingTriangle {
             let vy = dir.sin() * mag;
 
             // Rotated point
-            Point {
-                x: c.x + vx as isize,
-                y: c.y + vy as isize,
-            }
+            PointF::new(c.x().add_f(vx), c.y().add_f(vy))
         }
 
         self.angle += 0.5 * PI * dt_s;
 
-        let c = Point {
-            x: (canvas.width() / 2) as isize,
-            y: (canvas.height() / 2) as isize,
-        };
+        let c = PointF::from_int(
+            (canvas.width() / 2) as isize,
+            (canvas.height() / 2) as isize,
+        );
         let v1 = rotate_point(c, self.v1, self.angle);
         let v2 = rotate_point(c, self.v2, self.angle);
         let v3 = rotate_point(c, self.v3, self.angle);
