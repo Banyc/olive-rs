@@ -2,6 +2,8 @@ use std::cmp::Ordering;
 
 pub use self::points::{Point, PointF};
 
+const RESOLUTION: usize = 2;
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Canvas<'vec> {
     width: usize,
@@ -91,20 +93,18 @@ impl Canvas<'_> {
         let y_min = y1.min(y2).max(0) as usize;
         let y_max = y1.max(y2).max(0) as usize;
 
-        /// Say we have a line of size 1 and we divided it into `res` segments evenly.
-        ///
-        /// The middle of the line is at 0.5.
-        ///
-        /// It returns the offset from the middle point of the original line to the middle point of the `i`th segment.
-        fn offset_from_middle(i: usize, res: usize) -> f64 {
-            let offset_from_zero = (i + 1) as f64 / (res + 1) as f64;
-            offset_from_zero - 1. / 2.
+        fn is_inside_circle(dx: f64, dy: f64, r: f64) -> bool {
+            dx * dx + dy * dy <= r * r
         }
 
-        const RESOLUTION: usize = 2;
+        fn is_far_outside_circle(dx: f64, dy: f64, r: f64) -> bool {
+            let r1 = if r.is_sign_positive() { r + 1. } else { r - 1. };
+            dx * dx + dy * dy >= r1 * r1
+        }
 
-        fn is_inside_circle(dx: f64, dy: f64, r: f64) -> bool {
-            dx * dx + dy * dy <= (r * r)
+        fn is_far_inside_circle(dx: f64, dy: f64, r: f64) -> bool {
+            let r1 = if r.is_sign_positive() { r - 1. } else { r + 1. };
+            dx * dx + dy * dy <= r1 * r1
         }
 
         for y in y_min..=y_max {
@@ -115,28 +115,30 @@ impl Canvas<'_> {
                 if x >= self.width {
                     break;
                 }
-                let dx = isize::abs_diff(x as isize, c.x);
-                let dy = isize::abs_diff(y as isize, c.y);
+                let dx = isize::abs_diff(x as isize, c.x) as f64;
+                let dy = isize::abs_diff(y as isize, c.y) as f64;
+                let r = r as f64;
+
+                if is_far_outside_circle(dx, dy, r) {
+                    continue;
+                }
+
+                if is_far_inside_circle(dx, dy, r) {
+                    self.pixel_over_by(x, y, color);
+                    continue;
+                }
+
                 let mut sub_pixels_filled = 0;
-                for sub_y_i in 0..RESOLUTION {
-                    let dy = dy as f64 + offset_from_middle(sub_y_i, RESOLUTION);
-                    for sub_x_i in 0..RESOLUTION {
-                        let dx = dx as f64 + offset_from_middle(sub_x_i, RESOLUTION);
-                        if is_inside_circle(dx, dy, r as f64) {
+                offset_from_middle_iter().for_each(|y_off| {
+                    let dy = dy + y_off;
+                    offset_from_middle_iter().for_each(|x_off| {
+                        let dx = dx + x_off;
+                        if is_inside_circle(dx, dy, r) {
                             sub_pixels_filled += 1;
                         }
-                    }
-                }
-                let sub_pixels_total = RESOLUTION * RESOLUTION;
-                let sub_pixels_filled = sub_pixels_filled as f64 / sub_pixels_total as f64;
-                let alpha = color.a() as f64 * sub_pixels_filled;
-                let color = Pixel::new(color.r(), color.g(), color.b(), alpha as u8);
-                self.pixel_over_by(x, y, color);
-
-                // If we don't want to use sub-pixels, we can use this instead.
-                // if dx * dx + dy * dy <= (r * r) as usize {
-                //     self.pixel_over_by(x, y, color);
-                // }
+                    })
+                });
+                self.set_anti_aliasing_pixel(x, y, color, sub_pixels_filled);
             }
         }
     }
@@ -202,6 +204,20 @@ impl Canvas<'_> {
             }
         }
     }
+
+    fn set_anti_aliasing_pixel(
+        &mut self,
+        x: usize,
+        y: usize,
+        color: Pixel,
+        sub_pixels_filled: usize,
+    ) {
+        let sub_pixels_total = RESOLUTION * RESOLUTION;
+        let sub_pixels_filled = sub_pixels_filled as f64 / sub_pixels_total as f64;
+        let alpha = color.a() as f64 * sub_pixels_filled;
+        let color = Pixel::new(color.r(), color.g(), color.b(), alpha as u8);
+        self.pixel_over_by(x, y, color);
+    }
 }
 
 /// - Ref:
@@ -261,6 +277,27 @@ fn trim_edge(e: isize) -> isize {
     }
 }
 
+/// Say we have a line of size 1 and we divided it into `RESOLUTION` segments evenly.
+///
+/// The middle of the line is at 0.5.
+///
+/// There is an offset from the middle point of the original line to the middle point of each segment.
+///
+/// It iterates through all the offsets.
+fn offset_from_middle_iter() -> impl Iterator<Item = f64> {
+    /// Say we have a line of size 1 and we divided it into `res` segments evenly.
+    ///
+    /// The middle of the line is at 0.5.
+    ///
+    /// It returns the offset from the middle point of the original line to the middle point of the `i`th segment.
+    fn offset_from_middle(i: usize, res: usize) -> f64 {
+        let offset_from_zero = (i + 1) as f64 / (res + 1) as f64;
+        offset_from_zero - 1. / 2.
+    }
+
+    (0..RESOLUTION).map(|i| offset_from_middle(i, RESOLUTION))
+}
+
 mod points {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct Point {
@@ -280,9 +317,9 @@ mod points {
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct PointF {
         x: isize,
-        x_off: f64,
+        x_off: f64, // 0. ..1.
         y: isize,
-        y_off: f64,
+        y_off: f64, // 0. ..1.
     }
 
     impl PointF {
@@ -295,7 +332,17 @@ mod points {
             }
         }
 
-        pub fn from_float(x: isize, x_off: f64, y: isize, y_off: f64) -> Self {
+        pub fn from_float(mut x: isize, mut x_off: f64, mut y: isize, mut y_off: f64) -> Self {
+            if !(0. ..1.).contains(&x_off) {
+                let d = x_off.floor() as isize;
+                x += d;
+                x_off -= d as f64;
+            }
+            if !(0. ..1.).contains(&y_off) {
+                let d = y_off.floor() as isize;
+                y += d;
+                y_off -= d as f64;
+            }
             assert!((0. ..1.).contains(&x_off));
             assert!((0. ..1.).contains(&y_off));
             Self { x, x_off, y, y_off }
