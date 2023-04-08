@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+pub use self::points::{Point, PointF};
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Canvas<'vec> {
     width: usize,
@@ -190,7 +192,7 @@ impl Canvas<'_> {
                     x: x as isize,
                     y: y as isize,
                 };
-                if is_inside_triangle(p, v1, v2, v3) {
+                if is_inside_triangle(p.into(), v1.into(), v2.into(), v3.into()) {
                     self.pixel_over_by(x, y, color);
                 }
             }
@@ -201,7 +203,7 @@ impl Canvas<'_> {
 /// - Ref:
 ///   - implementation: <https://stackoverflow.com/a/2049593/9920172>
 ///   - Determinant: <https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:matrices-as-transformations/v/interpreting-determinants-in-terms-of-area>
-fn is_inside_triangle(p: Point, v1: Point, v2: Point, v3: Point) -> bool {
+fn is_inside_triangle(p: PointF, v1: PointF, v2: PointF, v3: PointF) -> bool {
     /// Determinant of the following matrix:
     ///
     /// ```text
@@ -219,15 +221,17 @@ fn is_inside_triangle(p: Point, v1: Point, v2: Point, v3: Point) -> bool {
     /// - The determinant is positive as long as v2 is still on the left side of v1
     /// - The determinant is negative as long as v2 is on the right side of v1
     /// - The determinant is zero when v2 is on the same line as v1
-    fn determinant(p0: Point, p1: Point, p2: Point) -> isize {
-        (p1.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p1.y - p0.y)
+    fn determinant(p0: PointF, p1: PointF, p2: PointF) -> f64 {
+        let (x01, y01) = p0.vector_to(p1);
+        let (x02, y02) = p0.vector_to(p2);
+        x01 * y02 - x02 * y01
     }
     let d1 = determinant(p, v1, v2);
     let d2 = determinant(p, v2, v3);
     let d3 = determinant(p, v3, v1);
-    let all_neg = d1 < 0 && d2 < 0 && d3 < 0;
-    let all_pos = d1 > 0 && d2 > 0 && d3 > 0;
-    let any_zero = d1 == 0 || d2 == 0 || d3 == 0;
+    let all_neg = d1 < 0. && d2 < 0. && d3 < 0.;
+    let all_pos = d1 > 0. && d2 > 0. && d3 > 0.;
+    let any_zero = d1 == 0. || d2 == 0. || d3 == 0.;
 
     // Either:
     // - all:
@@ -253,10 +257,68 @@ fn trim_edge(e: isize) -> isize {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Point {
-    pub x: isize,
-    pub y: isize,
+mod points {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Point {
+        pub x: isize,
+        pub y: isize,
+    }
+
+    impl From<PointF> for Point {
+        fn from(p: PointF) -> Self {
+            Self {
+                x: p.x_round(),
+                y: p.y_round(),
+            }
+        }
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct PointF {
+        x: isize,
+        x_off: f64,
+        y: isize,
+        y_off: f64,
+    }
+
+    impl PointF {
+        pub const fn from_int(x: isize, y: isize) -> Self {
+            Self {
+                x,
+                x_off: 0.,
+                y,
+                y_off: 0.,
+            }
+        }
+
+        pub fn from_float(x: isize, x_off: f64, y: isize, y_off: f64) -> Self {
+            assert!((0. ..1.).contains(&x_off));
+            assert!((0. ..1.).contains(&y_off));
+            Self { x, x_off, y, y_off }
+        }
+
+        pub fn x_round(&self) -> isize {
+            self.x + self.x_off.round() as isize
+        }
+
+        pub fn y_round(&self) -> isize {
+            self.y + self.y_off.round() as isize
+        }
+
+        pub fn vector_to(&self, rhs: Self) -> (f64, f64) {
+            let x = rhs.x - self.x;
+            let y = rhs.y - self.y;
+            let x_off = rhs.x_off - self.x_off;
+            let y_off = rhs.y_off - self.y_off;
+            (x as f64 + x_off, y as f64 + y_off)
+        }
+    }
+
+    impl From<Point> for PointF {
+        fn from(p: Point) -> Self {
+            Self::from_int(p.x, p.y)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
