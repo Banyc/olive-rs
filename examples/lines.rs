@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
+use olive_rs::{save_to_png_file, save_to_ppm_file, Canvas, Pixel, Point};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -76,4 +76,5 @@ fn main() {
         canvas.draw_line(p1, p2, FOREGROUND_COLOR);
     }
     save_to_ppm_file(&canvas, "lines.ppm").unwrap();
+    save_to_png_file(&canvas, "lines.png").unwrap();
 }

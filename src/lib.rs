@@ -1,7 +1,7 @@
 mod canvas;
-mod ppm;
+mod file;
 mod render;
 
 pub use canvas::*;
-pub use ppm::*;
+pub use file::*;
 pub use render::*;

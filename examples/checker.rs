@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel, Point};
+use olive_rs::{save_to_png_file, save_to_ppm_file, Canvas, Pixel, Point};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -31,4 +31,5 @@ fn main() {
     }
 
     save_to_ppm_file(&canvas, "checker.ppm").unwrap();
+    save_to_png_file(&canvas, "checker.png").unwrap();
 }

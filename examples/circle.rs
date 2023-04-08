@@ -1,4 +1,4 @@
-use olive_rs::{save_to_ppm_file, Canvas, Pixel, PointF};
+use olive_rs::{save_to_png_file, save_to_ppm_file, Canvas, Pixel, PointF};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -31,6 +31,7 @@ fn main() {
     }
 
     save_to_ppm_file(&canvas, "circle.ppm").unwrap();
+    save_to_png_file(&canvas, "circle.png").unwrap();
 }
 
 /// Linear interpolation between two values.
