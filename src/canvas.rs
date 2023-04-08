@@ -103,7 +103,13 @@ impl Canvas<'_> {
         }
 
         fn is_far_inside_circle(dx: f64, dy: f64, r: f64) -> bool {
-            let r1 = if r.is_sign_positive() { r - 1. } else { r + 1. };
+            let r1 = if r.is_sign_positive() && r > 1. {
+                r - 1.
+            } else if r.is_sign_negative() && r < -1. {
+                r + 1.
+            } else {
+                return false;
+            };
             dx * dx + dy * dy <= r1 * r1
         }
 
