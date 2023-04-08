@@ -103,6 +103,10 @@ impl Canvas<'_> {
 
         const RESOLUTION: usize = 2;
 
+        fn is_inside_circle(dx: f64, dy: f64, r: f64) -> bool {
+            dx * dx + dy * dy <= (r * r)
+        }
+
         for y in y_min..=y_max {
             if y >= self.height {
                 break;
@@ -118,7 +122,7 @@ impl Canvas<'_> {
                     let dy = dy as f64 + offset_from_middle(sub_y_i, RESOLUTION);
                     for sub_x_i in 0..RESOLUTION {
                         let dx = dx as f64 + offset_from_middle(sub_x_i, RESOLUTION);
-                        if dx * dx + dy * dy <= (r * r) as f64 {
+                        if is_inside_circle(dx, dy, r as f64) {
                             sub_pixels_filled += 1;
                         }
                     }
