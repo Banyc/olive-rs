@@ -3,7 +3,7 @@ use std::{
     path::Path,
 };
 
-use crate::Canvas;
+use olive_rs::Canvas;
 
 fn create_file<P>(file_path: P) -> io::Result<std::io::BufWriter<std::fs::File>>
 where

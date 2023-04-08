@@ -2,7 +2,8 @@
 mod tests {
     use std::{io::Read, path::Path};
 
-    use olive_rs::{save_to_ppm_stream, Canvas, Pixel, Point, PointF};
+    use file_gen::save_to_ppm_stream;
+    use olive_rs::{Canvas, Pixel, Point, PointF};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);

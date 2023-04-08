@@ -1,4 +1,5 @@
-use olive_rs::{save_to_png_file, save_to_ppm_file, Canvas, Pixel, PointF};
+use file_gen::{save_to_png_file, save_to_ppm_file};
+use olive_rs::{Canvas, Pixel, PointF};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
