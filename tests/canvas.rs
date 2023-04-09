@@ -2,8 +2,8 @@
 mod tests {
     use std::{io::Read, path::Path};
 
-    use file_gen::save_to_ppm_stream;
-    use olive_rs::{Canvas, HeapPixels2D, Pixel, Pixels2D, Point, PointF};
+    use file_gen::{save_to_png_stream, save_to_ppm_stream};
+    use olive_rs::{default_font, Canvas, HeapPixels2D, Pixel, Pixels2D, Point, PointF};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -21,13 +21,23 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
-    fn assert_eq_canvas_with_file<P, CP>(expected: P, actual: &CP)
+    fn assert_eq_ppm_pixels_with_file<P, CP>(expected: P, actual: &CP)
     where
         P: AsRef<Path>,
         CP: Pixels2D,
     {
         let mut bytes = Vec::new();
         save_to_ppm_stream(actual, &mut bytes).unwrap();
+        assert_eq_bytes_with_file(expected, &bytes);
+    }
+
+    fn assert_eq_png_pixels_with_file<P, CP>(expected: P, actual: &CP)
+    where
+        P: AsRef<Path>,
+        CP: Pixels2D,
+    {
+        let mut bytes = Vec::new();
+        save_to_png_stream(actual, &mut bytes).unwrap();
         assert_eq_bytes_with_file(expected, &bytes);
     }
 
@@ -58,7 +68,7 @@ mod tests {
             };
             canvas.fill_rect(p, w / 2, h / 2, BLUE_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &pixels);
+        assert_eq_ppm_pixels_with_file("tests/assets/fill_rect.ppm", &pixels);
     }
 
     #[test]
@@ -99,7 +109,7 @@ mod tests {
             let r = (-w / 4) as f64;
             canvas.fill_circle(c, r, GREEN_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &pixels);
+        assert_eq_ppm_pixels_with_file("tests/assets/fill_circle.ppm", &pixels);
     }
 
     #[test]
@@ -141,7 +151,7 @@ mod tests {
             let p2 = Point { x: w / 2, y: h };
             canvas.draw_line(p1, p2, GREEN_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &pixels);
+        assert_eq_ppm_pixels_with_file("tests/assets/draw_line.ppm", &pixels);
     }
 
     #[test]
@@ -171,7 +181,7 @@ mod tests {
             let v3 = PointF::from_int(w * 3 / 8, h * 3 / 8);
             canvas.fill_triangle(v1, v2, v3, BLUE_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &pixels);
+        assert_eq_ppm_pixels_with_file("tests/assets/fill_triangle.ppm", &pixels);
     }
 
     #[test]
@@ -202,6 +212,24 @@ mod tests {
             let v3 = PointF::from_int(w / 2, 0);
             canvas.fill_triangle(v1, v2, v3, Pixel::new(0xaa, 0xaa, 0, 0xbb));
         }
-        assert_eq_canvas_with_file("tests/assets/alpha_blending.ppm", &pixels);
+        assert_eq_ppm_pixels_with_file("tests/assets/alpha_blending.ppm", &pixels);
+    }
+
+    #[test]
+    fn text() {
+        let w = 128 * 2;
+        let h = 32;
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
+        canvas.fill(BACKGROUND_COLOR);
+        let font = default_font();
+        let text = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
+Aa 0123456789
+Aa !?.,\'\"()[]{}<>:;/\\-_=+*&^%$#@`~|
+Hello, world!
+";
+        let pos = Point { x: 0, y: 0 };
+        canvas.text(text, pos, &font, 1, RED_COLOR);
+        assert_eq_png_pixels_with_file("tests/assets/text.png", &pixels);
     }
 }

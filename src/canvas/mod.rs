@@ -1,9 +1,13 @@
 use std::cmp::Ordering;
 
+mod font;
 mod pixel;
 mod point;
 
+use crate::canvas::font::unknown_glyph;
+
 pub use self::{
+    font::{default_font, Font},
     pixel::{HeapPixels2D, Pixel, Pixels2D, StackPixels2D},
     point::{EvenF, Point, PointF},
 };
@@ -204,6 +208,41 @@ where
                     self.pixel_over_by(x, y, color);
                 }
             }
+        }
+    }
+
+    pub fn text(&mut self, text: &str, pos: Point, font: &Font, size: usize, color: Pixel) {
+        assert_eq!(size, 1);
+        let unknown_glyph = unknown_glyph();
+        let mut x = pos.x;
+        let mut max_height: usize = 0;
+        let mut y = pos.y;
+        for c in text.chars() {
+            if c == '\n' {
+                x = pos.x;
+                y += max_height as isize + 1;
+                max_height = 0;
+                continue;
+            }
+
+            let glyph = match font.glyph(c) {
+                Some(glyph) => glyph,
+                None => &unknown_glyph,
+            };
+
+            for p in glyph.points() {
+                let y = y + p.y;
+                max_height = max_height.max(glyph.height() + 1);
+                if y < 0 || y >= self.pixels2d.height() as isize {
+                    continue;
+                }
+                let x = x + p.x;
+                if x < 0 || x >= self.pixels2d.width() as isize {
+                    continue;
+                }
+                self.pixel_over_by(x as usize, y as usize, color);
+            }
+            x += glyph.width() as isize + 1;
         }
     }
 
