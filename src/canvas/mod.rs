@@ -4,45 +4,34 @@ mod pixel;
 mod point;
 
 pub use self::{
-    pixel::Pixel,
+    pixel::{HeapPixels2D, Pixel, Pixels2D, StackPixels2D},
     point::{EvenF, Point, PointF},
 };
 
 const RESOLUTION: usize = 2;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Canvas<'vec> {
-    width: usize,
-    height: usize,
-    pixels: &'vec mut [Pixel],
+pub struct Canvas<'pixels, P> {
+    pixels2d: &'pixels mut P,
 }
 
-impl Canvas<'_> {
-    pub fn new(width: usize, height: usize, pixels: &mut [Pixel]) -> Canvas {
-        assert_eq!(width * height, pixels.len());
-        Canvas {
-            width,
-            height,
-            pixels,
-        }
+impl<'pixels, P> Canvas<'pixels, P>
+where
+    P: Pixels2D,
+{
+    pub fn new(pixels2d: &'pixels mut P) -> Self {
+        Self { pixels2d }
     }
 
-    pub fn width(&self) -> usize {
-        self.width
-    }
-
-    pub fn height(&self) -> usize {
-        self.height
-    }
-
-    pub fn pixels(&self) -> &[Pixel] {
-        self.pixels
+    pub fn inner(&self) -> &P {
+        self.pixels2d
     }
 
     pub fn pixel_mut(&mut self, x: usize, y: usize) -> &mut Pixel {
-        assert!(x < self.width);
-        assert!(y < self.height);
-        &mut self.pixels[y * self.width + x]
+        assert!(x < self.pixels2d.width());
+        assert!(y < self.pixels2d.height());
+        let w = self.pixels2d.width();
+        &mut self.pixels2d.pixels_mut()[y * w + x]
     }
 
     pub fn pixel_over_by(&mut self, x: usize, y: usize, color: Pixel) {
@@ -51,7 +40,7 @@ impl Canvas<'_> {
     }
 
     pub fn fill(&mut self, pixel: Pixel) {
-        for p in self.pixels.iter_mut() {
+        for p in self.pixels2d.pixels_mut() {
             *p = pixel;
         }
     }
@@ -70,11 +59,11 @@ impl Canvas<'_> {
         let x_min = p.x.min(p.x + w).max(0) as usize;
         let x_max = p.x.max(p.x + w).max(0) as usize;
         for y in y_min..=y_max {
-            if y >= self.height {
+            if y >= self.pixels2d.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.width {
+                if x >= self.pixels2d.width() {
                     break;
                 }
                 self.pixel_over_by(x, y, color);
@@ -113,11 +102,11 @@ impl Canvas<'_> {
         }
 
         for y in y_min..=y_max {
-            if y >= self.height {
+            if y >= self.pixels2d.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.width {
+                if x >= self.pixels2d.width() {
                     break;
                 }
                 let dx = EvenF::new(x as isize, 0.) - c.x();
@@ -162,7 +151,7 @@ impl Canvas<'_> {
             let k = dy as f64 / dx as f64;
             let b = p1.y as f64 - k * p1.x as f64;
             for x in x_min..x_max {
-                if x >= self.width {
+                if x >= self.pixels2d.width() {
                     break;
                 }
                 let y1 = (k * x as f64 + b) as usize;
@@ -170,7 +159,7 @@ impl Canvas<'_> {
                 let y_min = y1.min(y2);
                 let y_max = y1.max(y2);
                 for y in y_min..=y_max {
-                    if y >= self.height {
+                    if y >= self.pixels2d.height() {
                         break;
                     }
                     self.pixel_over_by(x, y, color);
@@ -179,7 +168,7 @@ impl Canvas<'_> {
         } else {
             // Vertical line
             for y in y_min..=y_max {
-                if y >= self.height {
+                if y >= self.pixels2d.height() {
                     break;
                 }
                 self.pixel_over_by(p1.x as usize, y, color);
@@ -203,11 +192,11 @@ impl Canvas<'_> {
             .max(0) as usize;
         let y_max = v1.y().ceil().max(v2.y().ceil()).max(v3.y().ceil()).max(0) as usize;
         for y in y_min..=y_max {
-            if y >= self.height {
+            if y >= self.pixels2d.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.width {
+                if x >= self.pixels2d.width() {
                     break;
                 }
                 let p = PointF::from_int(x as isize, y as isize);

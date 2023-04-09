@@ -1,8 +1,9 @@
 use file_gen::{save_to_png_file, save_to_ppm_file};
-use olive_rs::{Canvas, Pixel, PointF};
+use olive_rs::{Canvas, Pixel, PointF, StackPixels2D};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
+const SIZE: usize = WIDTH * HEIGHT;
 
 const COLS: usize = 8;
 const ROWS: usize = 6;
@@ -10,8 +11,8 @@ const ROWS: usize = 6;
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
 
 fn main() {
-    let mut pixels = [Pixel::new(0, 0, 0, 0); WIDTH * HEIGHT];
-    let mut canvas = Canvas::new(WIDTH, HEIGHT, &mut pixels);
+    let mut pixels = StackPixels2D::<SIZE>::new(WIDTH, HEIGHT, Pixel::new(0, 0, 0, 0));
+    let mut canvas = Canvas::new(&mut pixels);
     canvas.fill(BACKGROUND_COLOR);
 
     for y in 0..ROWS {
@@ -31,8 +32,8 @@ fn main() {
         }
     }
 
-    save_to_ppm_file(&canvas, "circle.ppm").unwrap();
-    save_to_png_file(&canvas, "circle.png").unwrap();
+    save_to_ppm_file(&pixels, "circle.ppm").unwrap();
+    save_to_png_file(&pixels, "circle.png").unwrap();
 }
 
 /// Linear interpolation between two values.

@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use olive_rs::{Canvas, EvenF, Pixel, PointF, Render};
+use olive_rs::{Canvas, EvenF, HeapPixels2D, Pixel, Pixels2D, PointF, Render};
 use wasm::start_render;
 
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
@@ -16,16 +16,14 @@ fn main() {
 }
 
 pub struct Animation {
-    pixels: Vec<Pixel>,
-    w: usize,
-    h: usize,
+    pixels: HeapPixels2D,
     rotating_triangle: RotatingTriangle,
     bouncing_circle: BouncingCircle,
 }
 
 impl Animation {
     pub fn new(w: usize, h: usize) -> Self {
-        let pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
+        let pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
         let w_i = w as isize;
         let h_i = h as isize;
         let rotating_triangle = RotatingTriangle::new(
@@ -44,8 +42,6 @@ impl Animation {
         );
         Self {
             pixels,
-            w,
-            h,
             rotating_triangle,
             bouncing_circle,
         }
@@ -55,14 +51,14 @@ impl Animation {
 impl Render for Animation {
     fn render(&mut self, dt_ms: f64) {
         let dt_s = dt_ms * 0.001;
-        let mut canvas = Canvas::new(self.w, self.h, &mut self.pixels);
+        let mut canvas = Canvas::new(&mut self.pixels);
         canvas.fill(BACKGROUND_COLOR);
         self.rotating_triangle.render(&mut canvas, dt_s);
         self.bouncing_circle.render(&mut canvas, dt_s);
     }
 
     fn pixels(&self) -> &[Pixel] {
-        &self.pixels
+        self.pixels.pixels()
     }
 }
 
@@ -88,7 +84,10 @@ impl RotatingTriangle {
 }
 
 impl RotatingTriangle {
-    fn render(&mut self, canvas: &mut Canvas<'_>, dt_s: f64) {
+    fn render<CP>(&mut self, canvas: &mut Canvas<'_, CP>, dt_s: f64)
+    where
+        CP: Pixels2D,
+    {
         fn rotate_point(c: PointF, p: PointF, angle: f64) -> PointF {
             // Vector from center to point
             let vx = p.x() - c.x();
@@ -109,8 +108,8 @@ impl RotatingTriangle {
         self.angle += 0.5 * PI * dt_s;
 
         let c = PointF::from_int(
-            (canvas.width() / 2) as isize,
-            (canvas.height() / 2) as isize,
+            (canvas.inner().width() / 2) as isize,
+            (canvas.inner().height() / 2) as isize,
         );
         let v1 = rotate_point(c, self.v1, self.angle);
         let v2 = rotate_point(c, self.v2, self.angle);
@@ -139,9 +138,12 @@ impl BouncingCircle {
         }
     }
 
-    pub fn render(&mut self, canvas: &mut Canvas<'_>, dt_s: f64) {
-        let w = canvas.width() as isize;
-        let h = canvas.height() as isize;
+    pub fn render<CP>(&mut self, canvas: &mut Canvas<'_, CP>, dt_s: f64)
+    where
+        CP: Pixels2D,
+    {
+        let w = canvas.inner().width() as isize;
+        let h = canvas.inner().height() as isize;
         let w = EvenF::new(w, 0.);
         let h = EvenF::new(h, 0.);
 

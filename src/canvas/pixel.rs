@@ -1,3 +1,81 @@
+pub trait Pixels2D {
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn pixels(&self) -> &[Pixel];
+    fn pixels_mut(&mut self) -> &mut [Pixel];
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StackPixels2D<const N: usize> {
+    pixels: [Pixel; N],
+    width: usize,
+    height: usize,
+}
+
+impl<const N: usize> StackPixels2D<N> {
+    pub fn new(width: usize, height: usize, fill: Pixel) -> StackPixels2D<N> {
+        assert_eq!(width * height, N);
+        StackPixels2D {
+            pixels: [fill; N],
+            width,
+            height,
+        }
+    }
+}
+
+impl<const N: usize> Pixels2D for StackPixels2D<N> {
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
+
+    fn pixels(&self) -> &[Pixel] {
+        &self.pixels
+    }
+
+    fn pixels_mut(&mut self) -> &mut [Pixel] {
+        &mut self.pixels
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HeapPixels2D {
+    pixels: Vec<Pixel>,
+    width: usize,
+    height: usize,
+}
+
+impl HeapPixels2D {
+    pub fn new(width: usize, height: usize, fill: Pixel) -> HeapPixels2D {
+        HeapPixels2D {
+            pixels: vec![fill; width * height],
+            width,
+            height,
+        }
+    }
+}
+
+impl Pixels2D for HeapPixels2D {
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
+
+    fn pixels(&self) -> &[Pixel] {
+        &self.pixels
+    }
+
+    fn pixels_mut(&mut self) -> &mut [Pixel] {
+        &mut self.pixels
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct Pixel {

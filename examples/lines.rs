@@ -1,15 +1,16 @@
 use file_gen::{save_to_png_file, save_to_ppm_file};
-use olive_rs::{Canvas, Pixel, Point};
+use olive_rs::{Canvas, Pixel, Point, StackPixels2D};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
+const SIZE: usize = WIDTH * HEIGHT;
 
 const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
 const FOREGROUND_COLOR: Pixel = Pixel::new(0xff, 0xff, 0xff, 0xff);
 
 fn main() {
-    let mut pixels = [Pixel::new(0, 0, 0, 0); WIDTH * HEIGHT];
-    let mut canvas = Canvas::new(WIDTH, HEIGHT, &mut pixels);
+    let mut pixels = StackPixels2D::<SIZE>::new(WIDTH, HEIGHT, Pixel::new(0, 0, 0, 0));
+    let mut canvas = Canvas::new(&mut pixels);
     canvas.fill(BACKGROUND_COLOR);
     let w = WIDTH as isize;
     let h = HEIGHT as isize;
@@ -76,6 +77,6 @@ fn main() {
         let p2 = Point { x: w, y: h / 2 };
         canvas.draw_line(p1, p2, FOREGROUND_COLOR);
     }
-    save_to_ppm_file(&canvas, "lines.ppm").unwrap();
-    save_to_png_file(&canvas, "lines.png").unwrap();
+    save_to_ppm_file(&pixels, "lines.ppm").unwrap();
+    save_to_png_file(&pixels, "lines.png").unwrap();
 }

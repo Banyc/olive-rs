@@ -3,7 +3,7 @@ mod tests {
     use std::{io::Read, path::Path};
 
     use file_gen::save_to_ppm_stream;
-    use olive_rs::{Canvas, Pixel, Point, PointF};
+    use olive_rs::{Canvas, HeapPixels2D, Pixel, Pixels2D, Point, PointF};
 
     const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
     const RED_COLOR: Pixel = Pixel::new(0xff, 0, 0, 0xff);
@@ -21,9 +21,10 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
-    fn assert_eq_canvas_with_file<P>(expected: P, actual: &Canvas)
+    fn assert_eq_canvas_with_file<P, CP>(expected: P, actual: &CP)
     where
         P: AsRef<Path>,
+        CP: Pixels2D,
     {
         let mut bytes = Vec::new();
         save_to_ppm_stream(actual, &mut bytes).unwrap();
@@ -34,8 +35,8 @@ mod tests {
     fn fill_rect() {
         let w = 128;
         let h = 128;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -57,29 +58,29 @@ mod tests {
             };
             canvas.fill_rect(p, w / 2, h / 2, BLUE_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &canvas);
+        assert_eq_canvas_with_file("tests/assets/fill_rect.ppm", &pixels);
     }
 
     #[test]
     fn zero_size_rect() {
         let w = 1;
         let h = 1;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         {
             let p = Point { x: 0, y: 0 };
             canvas.fill_rect(p, 0, 0, RED_COLOR);
         }
-        assert_eq!(canvas.pixels(), [BACKGROUND_COLOR]);
+        assert_eq!(pixels.pixels(), [BACKGROUND_COLOR]);
     }
 
     #[test]
     fn fill_circle() {
         let w = 128;
         let h = 128;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -98,30 +99,30 @@ mod tests {
             let r = (-w / 4) as f64;
             canvas.fill_circle(c, r, GREEN_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &canvas);
+        assert_eq_canvas_with_file("tests/assets/fill_circle.ppm", &pixels);
     }
 
     #[test]
     fn zero_radius_circle() {
         let w = 1;
         let h = 1;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         {
             let c = PointF::from_int(0, 0);
             let r = 0.;
             canvas.fill_circle(c, r, RED_COLOR);
         }
-        assert_eq!(canvas.pixels(), [BACKGROUND_COLOR]);
+        assert_eq!(pixels.pixels(), [BACKGROUND_COLOR]);
     }
 
     #[test]
     fn draw_line() {
         let w = 128;
         let h = 128;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -140,15 +141,15 @@ mod tests {
             let p2 = Point { x: w / 2, y: h };
             canvas.draw_line(p1, p2, GREEN_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &canvas);
+        assert_eq_canvas_with_file("tests/assets/draw_line.ppm", &pixels);
     }
 
     #[test]
     fn fill_triangle() {
         let w = 128;
         let h = 128;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -170,15 +171,15 @@ mod tests {
             let v3 = PointF::from_int(w * 3 / 8, h * 3 / 8);
             canvas.fill_triangle(v1, v2, v3, BLUE_COLOR);
         }
-        assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &canvas);
+        assert_eq_canvas_with_file("tests/assets/fill_triangle.ppm", &pixels);
     }
 
     #[test]
     fn alpha_blending() {
         let w = 128;
         let h = 128;
-        let mut pixels = vec![Pixel::new(0, 0, 0, 0); w * h];
-        let mut canvas = Canvas::new(w, h, &mut pixels);
+        let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
+        let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -201,6 +202,6 @@ mod tests {
             let v3 = PointF::from_int(w / 2, 0);
             canvas.fill_triangle(v1, v2, v3, Pixel::new(0xaa, 0xaa, 0, 0xbb));
         }
-        assert_eq_canvas_with_file("tests/assets/alpha_blending.ppm", &canvas);
+        assert_eq_canvas_with_file("tests/assets/alpha_blending.ppm", &pixels);
     }
 }
