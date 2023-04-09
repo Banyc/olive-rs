@@ -217,8 +217,8 @@ mod tests {
 
     #[test]
     fn text() {
-        let w = 128 * 2;
-        let h = 32;
+        let w = 128 * 5;
+        let h = 128 * 2;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
         let mut canvas = Canvas::new(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
@@ -230,6 +230,15 @@ Hello, world!
 ";
         let pos = Point { x: 0, y: 0 };
         canvas.text(text, pos, &font, 1, RED_COLOR);
+        let pos = Point { x: 0, y: 32 };
+        canvas.text(text, pos, &font, 2, RED_COLOR);
+        let pos = Point { x: 0, y: 32 * 3 };
+        canvas.text(text, pos, &font, 3, RED_COLOR);
+
+        let text = "// Out of canvas";
+        let pos = Point { x: -16, y: 32 * 6 };
+        canvas.text(text, pos, &font, 14, GREEN_COLOR);
+
         assert_eq_png_pixels_with_file("tests/assets/text.png", &pixels);
     }
 }

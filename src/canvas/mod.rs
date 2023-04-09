@@ -212,7 +212,7 @@ where
     }
 
     pub fn text(&mut self, text: &str, pos: Point, font: &Font, size: usize, color: Pixel) {
-        assert_eq!(size, 1);
+        assert!(size <= isize::MAX as usize, "size is too big");
         let unknown_glyph = unknown_glyph();
         let mut x = pos.x;
         let mut max_height: usize = 0;
@@ -220,7 +220,9 @@ where
         for c in text.chars() {
             if c == '\n' {
                 x = pos.x;
-                y += max_height as isize + 1;
+                let dy = (max_height + 1) * size;
+                assert!(dy <= isize::MAX as usize, "dy is too big");
+                y += dy as isize;
                 max_height = 0;
                 continue;
             }
@@ -231,18 +233,24 @@ where
             };
 
             for p in glyph.points() {
-                let y = y + p.y;
-                max_height = max_height.max(glyph.height() + 1);
-                if y < 0 || y >= self.pixels2d.height() as isize {
-                    continue;
+                for y_i in 0..size {
+                    let y = y + p.y * size as isize + y_i as isize;
+                    max_height = max_height.max(glyph.height() + 1);
+                    if y < 0 || y >= self.pixels2d.height() as isize {
+                        continue;
+                    }
+                    for x_i in 0..size {
+                        let x = x + p.x * size as isize + x_i as isize;
+                        if x < 0 || x >= self.pixels2d.width() as isize {
+                            continue;
+                        }
+                        self.pixel_over_by(x as usize, y as usize, color);
+                    }
                 }
-                let x = x + p.x;
-                if x < 0 || x >= self.pixels2d.width() as isize {
-                    continue;
-                }
-                self.pixel_over_by(x as usize, y as usize, color);
             }
-            x += glyph.width() as isize + 1;
+            let dx = (glyph.width() + 1) * size;
+            assert!(dx <= isize::MAX as usize, "dx is too big");
+            x += dx as isize;
         }
     }
 
