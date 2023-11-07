@@ -4,7 +4,7 @@ mod font;
 mod pixel;
 mod point;
 
-use crate::canvas::font::unknown_glyph;
+use crate::{canvas::font::unknown_glyph, math};
 
 pub use self::{
     font::{default_font, Font},
@@ -46,6 +46,26 @@ where
     pub fn fill(&mut self, pixel: Pixel) {
         for p in self.pixels2d.pixels_mut() {
             *p = pixel;
+        }
+    }
+
+    pub fn fill_by_function(
+        &mut self,
+        x_axis_range: std::ops::RangeInclusive<f64>,
+        y_axis_range: std::ops::RangeInclusive<f64>,
+        f: impl Fn(f64, f64) -> Pixel,
+    ) {
+        for pixel_y in 0..self.pixels2d.height() {
+            let t = (self.pixels2d.height() - pixel_y) as f64 / self.pixels2d.height() as f64;
+            let y = math::lerp(&y_axis_range, t);
+            for pixel_x in 0..self.pixels2d.width() {
+                let t = pixel_x as f64 / self.pixels2d.width() as f64;
+                let x = math::lerp(&x_axis_range, t);
+
+                // Write pixel
+                let pixel = f(x, y);
+                self.pixel_over_by(pixel_x, pixel_y, pixel);
+            }
         }
     }
 

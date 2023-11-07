@@ -1,4 +1,5 @@
 mod canvas;
+mod math;
 mod render;
 
 pub use canvas::*;
