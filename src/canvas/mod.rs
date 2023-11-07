@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 mod font;
 mod pixel;
 mod point;
+mod real;
 
 use crate::{canvas::font::unknown_glyph, math};
 
@@ -49,20 +50,20 @@ where
 
     pub fn fill_by_function(
         &mut self,
-        x_axis_range: std::ops::RangeInclusive<f64>,
-        y_axis_range: std::ops::RangeInclusive<f64>,
-        f: impl Fn(f64, f64) -> Pixel,
+        real_space: &real::RealSpace,
+        f: impl Fn(f64, f64) -> Option<Pixel>,
     ) {
         for pixel_y in 0..self.pixels2d.height() {
             let t = (self.pixels2d.height() - pixel_y) as f64 / self.pixels2d.height() as f64;
-            let y = math::lerp(&y_axis_range, t);
+            let y = math::lerp(real_space.y_axis_range(), t);
             for pixel_x in 0..self.pixels2d.width() {
                 let t = pixel_x as f64 / self.pixels2d.width() as f64;
-                let x = math::lerp(&x_axis_range, t);
+                let x = math::lerp(real_space.x_axis_range(), t);
 
                 // Write pixel
-                let pixel = f(x, y);
-                self.pixel_over_by(pixel_x, pixel_y, pixel);
+                if let Some(pixel) = f(x, y) {
+                    self.pixel_over_by(pixel_x, pixel_y, pixel);
+                }
             }
         }
     }
@@ -91,6 +92,30 @@ where
                 self.pixel_over_by(x, y, color);
             }
         }
+    }
+
+    pub fn fill_real_rect(
+        &mut self,
+        real_space: &real::RealSpace,
+        anchor: real::RealPoint,
+        w: f64,
+        h: f64,
+        color: Pixel,
+    ) {
+        let y_min = anchor.y().min(anchor.y() + h);
+        let y_max = anchor.y().max(anchor.y() + h);
+        let x_min = anchor.x().min(anchor.x() + w);
+        let x_max = anchor.x().max(anchor.x() + w);
+
+        self.fill_by_function(real_space, |x, y| {
+            if !(y_min..=y_max).contains(&y) {
+                return None;
+            }
+            if !(x_min..=x_max).contains(&x) {
+                return None;
+            }
+            Some(color)
+        });
     }
 
     pub fn fill_circle(&mut self, c: PointF, r: f64, color: Pixel) {
