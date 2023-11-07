@@ -44,9 +44,7 @@ where
     }
 
     pub fn fill(&mut self, pixel: Pixel) {
-        for p in self.pixels2d.pixels_mut() {
-            *p = pixel;
-        }
+        self.pixels2d.pixels_mut().fill(pixel);
     }
 
     pub fn fill_by_function(
