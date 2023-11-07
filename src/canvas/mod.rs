@@ -185,6 +185,35 @@ where
         }
     }
 
+    pub fn fill_real_circle(
+        &mut self,
+        real_space: &real::RealSpace,
+        c: real::RealPoint,
+        r: f64,
+        color: Pixel,
+    ) {
+        let y_min = c.y() - r.abs();
+        let y_max = c.y() + r.abs();
+        let x_min = c.x() - r.abs();
+        let x_max = c.x() + r.abs();
+
+        self.fill_by_function(real_space, |x, y| {
+            if !(y_min..=y_max).contains(&y) {
+                return None;
+            }
+            if !(x_min..=x_max).contains(&x) {
+                return None;
+            }
+            let dx = c.x() - x;
+            let dy = c.y() - y;
+            let in_circle = dx * dx + dy * dy <= r * r;
+            if !in_circle {
+                return None;
+            }
+            Some(color)
+        });
+    }
+
     pub fn draw_line(&mut self, p1: Point, p2: Point, color: Pixel) {
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
