@@ -76,6 +76,12 @@ impl Pixels2D for HeapPixels2D {
     }
 }
 
+pub const BLACK: Pixel = Pixel::new(0, 0, 0, u8::MAX);
+pub const WHITE: Pixel = Pixel::new(u8::MAX, u8::MAX, u8::MAX, u8::MAX);
+pub const RED: Pixel = Pixel::new(u8::MAX, 0, 0, u8::MAX);
+pub const GREEN: Pixel = Pixel::new(0, u8::MAX, 0, u8::MAX);
+pub const BLUE: Pixel = Pixel::new(0, 0, u8::MAX, u8::MAX);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct Pixel {
