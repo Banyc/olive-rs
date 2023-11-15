@@ -52,7 +52,7 @@ where
     pub fn fill_by_function(
         &mut self,
         real_space: &real::RealSpace,
-        f: impl Fn(f64, f64) -> Option<Pixel>,
+        f: impl Fn(real::RealPoint) -> Option<Pixel>,
     ) {
         for pixel_y in 0..self.pixels2d.height() {
             let t = (self.pixels2d.height() - pixel_y) as f64 / self.pixels2d.height() as f64;
@@ -62,7 +62,7 @@ where
                 let x = math::lerp(real_space.x_axis_range(), t);
 
                 // Write pixel
-                if let Some(pixel) = f(x, y) {
+                if let Some(pixel) = f(real::RealPoint::new(x, y)) {
                     self.pixel_over_by(pixel_x, pixel_y, pixel);
                 }
             }
@@ -108,11 +108,11 @@ where
         let x_min = anchor.x().min(anchor.x() + w);
         let x_max = anchor.x().max(anchor.x() + w);
 
-        self.fill_by_function(real_space, |x, y| {
-            if !(y_min..=y_max).contains(&y) {
+        self.fill_by_function(real_space, |point| {
+            if !(y_min..=y_max).contains(&point.y()) {
                 return None;
             }
-            if !(x_min..=x_max).contains(&x) {
+            if !(x_min..=x_max).contains(&point.x()) {
                 return None;
             }
             Some(color)
@@ -198,15 +198,15 @@ where
         let x_min = c.x() - r.abs();
         let x_max = c.x() + r.abs();
 
-        self.fill_by_function(real_space, |x, y| {
-            if !(y_min..=y_max).contains(&y) {
+        self.fill_by_function(real_space, |point| {
+            if !(y_min..=y_max).contains(&point.y()) {
                 return None;
             }
-            if !(x_min..=x_max).contains(&x) {
+            if !(x_min..=x_max).contains(&point.x()) {
                 return None;
             }
-            let dx = c.x() - x;
-            let dy = c.y() - y;
+            let dx = c.x() - point.x();
+            let dy = c.y() - point.y();
             let in_circle = dx * dx + dy * dy <= r * r;
             if !in_circle {
                 return None;
