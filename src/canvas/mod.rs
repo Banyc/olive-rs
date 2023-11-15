@@ -11,6 +11,7 @@ pub use self::{
     font::{default_font, Font},
     pixel::{HeapPixels2D, Pixel, Pixels2D, StackPixels2D, BLACK, BLUE, GREEN, RED, WHITE},
     point::{EvenF, Point, PointF},
+    real::{RealPoint, RealSpace},
 };
 
 const RESOLUTION: usize = 2;
