@@ -1,5 +1,5 @@
 use file_gen::{save_to_png_file, save_to_ppm_file};
-use olive_rs::{Canvas, Pixel, Point, StackPixels2D};
+use olive_rs::{Canvas, Pixel, PixelPoint, StackPixels2D};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -16,66 +16,66 @@ fn main() {
     let h = HEIGHT as isize;
     // Diagonal lines of the full-size rectangle
     {
-        let p1 = Point { x: 0, y: h };
-        let p2 = Point { x: w, y: 0 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h };
+        let p2 = PixelPoint { x: w, y: 0 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: 0 };
-        let p2 = Point { x: w, y: h };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: 0 };
+        let p2 = PixelPoint { x: w, y: h };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     // Horizontal and vertical lines
     {
-        let p1 = Point { x: w / 2, y: h };
-        let p2 = Point { x: w / 2, y: 0 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: w / 2, y: h };
+        let p2 = PixelPoint { x: w / 2, y: 0 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: h / 2 };
-        let p2 = Point { x: w, y: h / 2 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h / 2 };
+        let p2 = PixelPoint { x: w, y: h / 2 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     // Diagonal lines of the half-size rectangles
     {
-        let p1 = Point { x: 0, y: 0 };
-        let p2 = Point { x: w / 2, y: h };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: 0 };
+        let p2 = PixelPoint { x: w / 2, y: h };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: w / 2, y: h };
-        let p2 = Point { x: w, y: 0 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: w / 2, y: h };
+        let p2 = PixelPoint { x: w, y: 0 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: h };
-        let p2 = Point { x: w / 2, y: 0 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h };
+        let p2 = PixelPoint { x: w / 2, y: 0 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: w / 2, y: 0 };
-        let p2 = Point { x: w, y: h };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: w / 2, y: 0 };
+        let p2 = PixelPoint { x: w, y: h };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: h / 2 };
-        let p2 = Point { x: w, y: 0 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h / 2 };
+        let p2 = PixelPoint { x: w, y: 0 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: 0 };
-        let p2 = Point { x: w, y: h / 2 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: 0 };
+        let p2 = PixelPoint { x: w, y: h / 2 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: h / 2 };
-        let p2 = Point { x: w, y: h };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h / 2 };
+        let p2 = PixelPoint { x: w, y: h };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     {
-        let p1 = Point { x: 0, y: h };
-        let p2 = Point { x: w, y: h / 2 };
-        canvas.draw_line(p1, p2, FOREGROUND_COLOR);
+        let p1 = PixelPoint { x: 0, y: h };
+        let p2 = PixelPoint { x: w, y: h / 2 };
+        canvas.draw_pixel_line(p1, p2, FOREGROUND_COLOR);
     }
     save_to_ppm_file(&pixels, "lines.ppm").unwrap();
     save_to_png_file(&pixels, "lines.png").unwrap();

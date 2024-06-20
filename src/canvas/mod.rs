@@ -1,17 +1,17 @@
 use std::cmp::Ordering;
 
+mod float_point;
 mod font;
 mod pixel;
-mod point;
-mod real;
+mod pixel_point;
 
 use crate::{canvas::font::unknown_glyph, math};
 
 pub use self::{
+    float_point::{FloatPoint, FloatSpace},
     font::{default_font, Font},
     pixel::{HeapPixels2D, Pixel, Pixels2D, StackPixels2D, BLACK, BLUE, GREEN, RED, WHITE},
-    point::{EvenF, Point, PointF},
-    real::{RealPoint, RealSpace},
+    pixel_point::{EvenF, PixelPoint, PixelPointF},
 };
 
 const RESOLUTION: usize = 2;
@@ -49,27 +49,28 @@ where
         self.pixels2d.pixels_mut().fill(pixel);
     }
 
-    pub fn fill_by_function(
+    /// input points for the closure is sampled from the `virtual_space`
+    pub fn fill_virtual_pixels(
         &mut self,
-        real_space: &real::RealSpace,
-        f: impl Fn(real::RealPoint) -> Option<Pixel>,
+        virtual_space: &float_point::FloatSpace,
+        f: impl Fn(float_point::FloatPoint) -> Option<Pixel>,
     ) {
         for pixel_y in 0..self.pixels2d.height() {
             let t = (self.pixels2d.height() - pixel_y) as f64 / self.pixels2d.height() as f64;
-            let y = math::lerp(real_space.y_axis_range(), t);
+            let y = math::lerp(virtual_space.y_axis_range(), t);
             for pixel_x in 0..self.pixels2d.width() {
                 let t = pixel_x as f64 / self.pixels2d.width() as f64;
-                let x = math::lerp(real_space.x_axis_range(), t);
+                let x = math::lerp(virtual_space.x_axis_range(), t);
 
                 // Write pixel
-                if let Some(pixel) = f(real::RealPoint::new(x, y)) {
+                if let Some(pixel) = f(float_point::FloatPoint::new(x, y)) {
                     self.pixel_over_by(pixel_x, pixel_y, pixel);
                 }
             }
         }
     }
 
-    pub fn fill_rect(&mut self, p: Point, w: isize, h: isize, color: Pixel) {
+    pub fn fill_pixel_rect(&mut self, p: PixelPoint, w: isize, h: isize, color: Pixel) {
         if w == 0 || h == 0 {
             return;
         }
@@ -95,10 +96,10 @@ where
         }
     }
 
-    pub fn fill_real_rect(
+    pub fn fill_virtual_rect(
         &mut self,
-        real_space: &real::RealSpace,
-        anchor: real::RealPoint,
+        virtual_space: &float_point::FloatSpace,
+        anchor: float_point::FloatPoint,
         w: f64,
         h: f64,
         color: Pixel,
@@ -108,7 +109,7 @@ where
         let x_min = anchor.x().min(anchor.x() + w);
         let x_max = anchor.x().max(anchor.x() + w);
 
-        self.fill_by_function(real_space, |point| {
+        self.fill_virtual_pixels(virtual_space, |point| {
             if !(y_min..=y_max).contains(&point.y()) {
                 return None;
             }
@@ -119,7 +120,7 @@ where
         });
     }
 
-    pub fn fill_circle(&mut self, c: PointF, r: f64, color: Pixel) {
+    pub fn fill_pixel_circle(&mut self, c: PixelPointF, r: f64, color: Pixel) {
         let x1 = (c.x().add_f(-r)).floor();
         let x2 = (c.x().add_f(r)).ceil();
         let y1 = (c.y().add_f(-r)).floor();
@@ -186,10 +187,10 @@ where
         }
     }
 
-    pub fn fill_real_circle(
+    pub fn fill_virtual_circle(
         &mut self,
-        real_space: &real::RealSpace,
-        c: real::RealPoint,
+        virtual_space: &float_point::FloatSpace,
+        c: float_point::FloatPoint,
         r: f64,
         color: Pixel,
     ) {
@@ -198,7 +199,7 @@ where
         let x_min = c.x() - r.abs();
         let x_max = c.x() + r.abs();
 
-        self.fill_by_function(real_space, |point| {
+        self.fill_virtual_pixels(virtual_space, |point| {
             if !(y_min..=y_max).contains(&point.y()) {
                 return None;
             }
@@ -215,7 +216,7 @@ where
         });
     }
 
-    pub fn draw_line(&mut self, p1: Point, p2: Point, color: Pixel) {
+    pub fn draw_pixel_line(&mut self, p1: PixelPoint, p2: PixelPoint, color: Pixel) {
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
 
@@ -253,7 +254,13 @@ where
         }
     }
 
-    pub fn fill_triangle(&mut self, v1: PointF, v2: PointF, v3: PointF, color: Pixel) {
+    pub fn fill_pixel_triangle(
+        &mut self,
+        v1: PixelPointF,
+        v2: PixelPointF,
+        v3: PixelPointF,
+        color: Pixel,
+    ) {
         let x_min = v1
             .x()
             .floor()
@@ -276,7 +283,7 @@ where
                 if x >= self.pixels2d.width() {
                     break;
                 }
-                let p = PointF::from_int(x as isize, y as isize);
+                let p = PixelPointF::from_int(x as isize, y as isize);
                 if is_inside_triangle(p, v1, v2, v3) {
                     self.pixel_over_by(x, y, color);
                 }
@@ -284,7 +291,14 @@ where
         }
     }
 
-    pub fn text(&mut self, text: &str, pos: Point, font: &Font, size: usize, color: Pixel) {
+    pub fn pixel_text(
+        &mut self,
+        text: &str,
+        pos: PixelPoint,
+        font: &Font,
+        size: usize,
+        color: Pixel,
+    ) {
         assert!(size <= isize::MAX as usize, "size is too big");
         let unknown_glyph = unknown_glyph();
         let mut x = pos.x;
@@ -345,7 +359,7 @@ where
 /// - Ref:
 ///   - implementation: <https://stackoverflow.com/a/2049593/9920172>
 ///   - Determinant: <https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:matrices-as-transformations/v/interpreting-determinants-in-terms-of-area>
-fn is_inside_triangle(p: PointF, v1: PointF, v2: PointF, v3: PointF) -> bool {
+fn is_inside_triangle(p: PixelPointF, v1: PixelPointF, v2: PixelPointF, v3: PixelPointF) -> bool {
     /// Determinant of the following matrix:
     ///
     /// ```text
@@ -363,7 +377,7 @@ fn is_inside_triangle(p: PointF, v1: PointF, v2: PointF, v3: PointF) -> bool {
     /// - The determinant is positive as long as v2 is still on the left side of v1
     /// - The determinant is negative as long as v2 is on the right side of v1
     /// - The determinant is zero when v2 is on the same line as v1
-    fn determinant(p0: PointF, p1: PointF, p2: PointF) -> f64 {
+    fn determinant(p0: PixelPointF, p1: PixelPointF, p2: PixelPointF) -> f64 {
         let (x01, y01) = p0.f_to(p1);
         let (x02, y02) = p0.f_to(p2);
         x01 * y02 - x02 * y01

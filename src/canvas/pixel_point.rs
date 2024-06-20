@@ -1,13 +1,13 @@
 use std::ops::{Add, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Point {
+pub struct PixelPoint {
     pub x: isize,
     pub y: isize,
 }
 
-impl From<PointF> for Point {
-    fn from(p: PointF) -> Self {
+impl From<PixelPointF> for PixelPoint {
+    fn from(p: PixelPointF) -> Self {
         Self {
             x: p.x().round(),
             y: p.y().round(),
@@ -84,12 +84,12 @@ impl From<f64> for EvenF {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PointF {
+pub struct PixelPointF {
     x: EvenF,
     y: EvenF,
 }
 
-impl PointF {
+impl PixelPointF {
     pub fn new(x: EvenF, y: EvenF) -> Self {
         Self { x, y }
     }
@@ -121,8 +121,8 @@ impl PointF {
     }
 }
 
-impl From<Point> for PointF {
-    fn from(p: Point) -> Self {
+impl From<PixelPoint> for PixelPointF {
+    fn from(p: PixelPoint) -> Self {
         Self::from_int(p.x, p.y)
     }
 }

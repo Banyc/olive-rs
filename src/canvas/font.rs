@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::Point;
+use crate::PixelPoint;
 
 pub struct Font {
     glyphs: HashMap<char, Glyph>,
@@ -19,7 +19,7 @@ impl Font {
 pub struct Glyph {
     width: usize,
     height: usize,
-    points: Vec<Point>,
+    points: Vec<PixelPoint>,
 }
 
 impl Glyph {
@@ -31,7 +31,7 @@ impl Glyph {
         self.height
     }
 
-    pub fn points(&self) -> &[Point] {
+    pub fn points(&self) -> &[PixelPoint] {
         &self.points
     }
 }
@@ -613,7 +613,7 @@ fn glyph_from_str(s: &str) -> Glyph {
     for (y, line) in s.lines().enumerate() {
         for (x, c) in line.chars().enumerate() {
             if c == DOT {
-                points.push(Point {
+                points.push(PixelPoint {
                     x: x as isize,
                     y: y as isize,
                 });

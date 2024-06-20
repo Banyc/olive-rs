@@ -1,5 +1,5 @@
 use file_gen::{save_to_png_file, save_to_ppm_file};
-use olive_rs::{Canvas, Pixel, Point, StackPixels2D};
+use olive_rs::{Canvas, Pixel, PixelPoint, StackPixels2D};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -24,11 +24,11 @@ fn main() {
             };
             let rw = WIDTH / COLS;
             let rh = HEIGHT / ROWS;
-            let p = Point {
+            let p = PixelPoint {
                 x: (x * rw) as isize,
                 y: (y * rh) as isize,
             };
-            canvas.fill_rect(p, rw as isize, rh as isize, color);
+            canvas.fill_pixel_rect(p, rw as isize, rh as isize, color);
         }
     }
 

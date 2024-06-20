@@ -1,12 +1,12 @@
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone)]
-pub struct RealSpace {
+pub struct FloatSpace {
     x_axis_range: RangeInclusive<f64>,
     y_axis_range: RangeInclusive<f64>,
 }
 
-impl RealSpace {
+impl FloatSpace {
     pub const fn new(x_axis_range: RangeInclusive<f64>, y_axis_range: RangeInclusive<f64>) -> Self {
         Self {
             x_axis_range,
@@ -24,12 +24,12 @@ impl RealSpace {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct RealPoint {
+pub struct FloatPoint {
     x: f64,
     y: f64,
 }
 
-impl RealPoint {
+impl FloatPoint {
     pub const fn new(x: f64, y: f64) -> Self {
         Self { x, y }
     }

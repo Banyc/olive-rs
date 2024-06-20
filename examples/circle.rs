@@ -1,5 +1,5 @@
 use file_gen::{save_to_png_file, save_to_ppm_file};
-use olive_rs::{Canvas, Pixel, PointF, StackPixels2D};
+use olive_rs::{Canvas, Pixel, PixelPointF, StackPixels2D};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -27,8 +27,8 @@ fn main() {
             let r = (w).min(h) as f64;
 
             let r = lerp(r / 8., r / 2., t);
-            let c = PointF::from_int((x * w + w / 2) as isize, (y * h + h / 2) as isize);
-            canvas.fill_circle(c, r, color);
+            let c = PixelPointF::from_int((x * w + w / 2) as isize, (y * h + h / 2) as isize);
+            canvas.fill_pixel_circle(c, r, color);
         }
     }
 
