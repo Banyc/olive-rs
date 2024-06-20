@@ -51,7 +51,7 @@ impl Animation {
 impl Render for Animation {
     fn render(&mut self, dt_ms: f64) {
         let dt_s = dt_ms * 0.001;
-        let mut canvas = Canvas::new(&mut self.pixels);
+        let mut canvas = Canvas::new_entire(&mut self.pixels);
         canvas.fill(BACKGROUND_COLOR);
         self.rotating_triangle.render(&mut canvas, dt_s);
         self.bouncing_circle.render(&mut canvas, dt_s);

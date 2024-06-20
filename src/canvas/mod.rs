@@ -19,14 +19,40 @@ const RESOLUTION: usize = 2;
 #[derive(Debug, PartialEq, Eq)]
 pub struct Canvas<'pixels, P> {
     pixels2d: &'pixels mut P,
+    x_range: std::ops::Range<usize>,
+    y_range: std::ops::Range<usize>,
 }
 
 impl<'pixels, P> Canvas<'pixels, P>
 where
     P: Pixels2D,
 {
-    pub fn new(pixels2d: &'pixels mut P) -> Self {
-        Self { pixels2d }
+    pub fn new_entire(pixels2d: &'pixels mut P) -> Self {
+        let width = pixels2d.width();
+        let height = pixels2d.height();
+        Self::new(pixels2d, 0..width, 0..height)
+    }
+    pub fn new(
+        pixels2d: &'pixels mut P,
+        x_range: std::ops::Range<usize>,
+        y_range: std::ops::Range<usize>,
+    ) -> Self {
+        assert!(x_range.start < pixels2d.width());
+        assert!(x_range.end <= pixels2d.width());
+        assert!(y_range.start < pixels2d.height());
+        assert!(y_range.end <= pixels2d.height());
+        Self {
+            pixels2d,
+            x_range,
+            y_range,
+        }
+    }
+
+    pub fn width(&self) -> usize {
+        self.x_range.len()
+    }
+    pub fn height(&self) -> usize {
+        self.y_range.len()
     }
 
     pub fn inner(&self) -> &P {
@@ -34,8 +60,10 @@ where
     }
 
     pub fn pixel_mut(&mut self, x: usize, y: usize) -> &mut Pixel {
-        assert!(x < self.pixels2d.width());
-        assert!(y < self.pixels2d.height());
+        assert!(x < self.x_range.len());
+        assert!(y < self.y_range.len());
+        let x = x + self.x_range.start;
+        let y = y + self.y_range.start;
         let w = self.pixels2d.width();
         &mut self.pixels2d.pixels_mut()[y * w + x]
     }
@@ -55,11 +83,11 @@ where
         virtual_space: &float_point::FloatSpace,
         f: impl Fn(float_point::FloatPoint) -> Option<Pixel>,
     ) {
-        for pixel_y in 0..self.pixels2d.height() {
-            let t = (self.pixels2d.height() - pixel_y) as f64 / self.pixels2d.height() as f64;
+        for pixel_y in 0..self.height() {
+            let t = (self.height() - pixel_y) as f64 / self.height() as f64;
             let y = math::lerp(virtual_space.y_axis_range(), t);
-            for pixel_x in 0..self.pixels2d.width() {
-                let t = pixel_x as f64 / self.pixels2d.width() as f64;
+            for pixel_x in 0..self.width() {
+                let t = pixel_x as f64 / self.width() as f64;
                 let x = math::lerp(virtual_space.x_axis_range(), t);
 
                 // Write pixel
@@ -84,11 +112,11 @@ where
         let x_min = p.x.min(p.x + w).max(0) as usize;
         let x_max = p.x.max(p.x + w).max(0) as usize;
         for y in y_min..=y_max {
-            if y >= self.pixels2d.height() {
+            if y >= self.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.pixels2d.width() {
+                if x >= self.width() {
                     break;
                 }
                 self.pixel_over_by(x, y, color);
@@ -151,11 +179,11 @@ where
         }
 
         for y in y_min..=y_max {
-            if y >= self.pixels2d.height() {
+            if y >= self.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.pixels2d.width() {
+                if x >= self.width() {
                     break;
                 }
                 let dx = EvenF::new(x as isize, 0.) - c.x();
@@ -229,7 +257,7 @@ where
             let k = dy as f64 / dx as f64;
             let b = p1.y as f64 - k * p1.x as f64;
             for x in x_min..x_max {
-                if x >= self.pixels2d.width() {
+                if x >= self.width() {
                     break;
                 }
                 let y1 = (k * x as f64 + b) as usize;
@@ -237,7 +265,7 @@ where
                 let y_min = y1.min(y2);
                 let y_max = y1.max(y2);
                 for y in y_min..=y_max {
-                    if y >= self.pixels2d.height() {
+                    if y >= self.height() {
                         break;
                     }
                     self.pixel_over_by(x, y, color);
@@ -246,7 +274,7 @@ where
         } else {
             // Vertical line
             for y in y_min..=y_max {
-                if y >= self.pixels2d.height() {
+                if y >= self.height() {
                     break;
                 }
                 self.pixel_over_by(p1.x as usize, y, color);
@@ -276,11 +304,11 @@ where
             .max(0) as usize;
         let y_max = v1.y().ceil().max(v2.y().ceil()).max(v3.y().ceil()).max(0) as usize;
         for y in y_min..=y_max {
-            if y >= self.pixels2d.height() {
+            if y >= self.height() {
                 break;
             }
             for x in x_min..=x_max {
-                if x >= self.pixels2d.width() {
+                if x >= self.width() {
                     break;
                 }
                 let p = PixelPointF::from_int(x as isize, y as isize);
@@ -323,12 +351,12 @@ where
                 for y_i in 0..size {
                     let y = y + p.y * size as isize + y_i as isize;
                     max_height = max_height.max(glyph.height() + 1);
-                    if y < 0 || y >= self.pixels2d.height() as isize {
+                    if y < 0 || y >= self.height() as isize {
                         continue;
                     }
                     for x_i in 0..size {
                         let x = x + p.x * size as isize + x_i as isize;
-                        if x < 0 || x >= self.pixels2d.width() as isize {
+                        if x < 0 || x >= self.width() as isize {
                             continue;
                         }
                         self.pixel_over_by(x as usize, y as usize, color);

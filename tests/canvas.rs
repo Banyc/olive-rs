@@ -47,7 +47,7 @@ mod tests {
         let w = 128;
         let h = 128;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -77,7 +77,7 @@ mod tests {
         let w = 1;
         let h = 1;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         {
             let p = PixelPoint { x: 0, y: 0 };
@@ -91,7 +91,7 @@ mod tests {
         let w = 128;
         let h = 128;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -118,7 +118,7 @@ mod tests {
         let w = 1;
         let h = 1;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         {
             let c = PixelPointF::from_int(0, 0);
@@ -133,7 +133,7 @@ mod tests {
         let w = 128;
         let h = 128;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -160,7 +160,7 @@ mod tests {
         let w = 128;
         let h = 128;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -190,7 +190,7 @@ mod tests {
         let w = 128;
         let h = 128;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new_entire(&mut pixels);
         canvas.fill(BACKGROUND_COLOR);
         let w = w as isize;
         let h = h as isize;
@@ -221,7 +221,7 @@ mod tests {
         let w = 128 * 5;
         let h = 128 * 2;
         let mut pixels = HeapPixels2D::new(w, h, Pixel::new(0, 0, 0, 0));
-        let mut canvas = Canvas::new(&mut pixels);
+        let mut canvas = Canvas::new(&mut pixels, 0..w, 0..h);
         canvas.fill(BACKGROUND_COLOR);
         let font = default_font();
         let text = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz

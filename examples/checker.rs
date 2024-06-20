@@ -12,7 +12,7 @@ const BACKGROUND_COLOR: Pixel = Pixel::new(0x20, 0x20, 0x20, 0xff);
 
 fn main() {
     let mut pixels = StackPixels2D::<SIZE>::new(WIDTH, HEIGHT, Pixel::new(0, 0, 0, 0));
-    let mut canvas = Canvas::new(&mut pixels);
+    let mut canvas = Canvas::new_entire(&mut pixels);
     canvas.fill(BACKGROUND_COLOR);
 
     for y in 0..ROWS {
